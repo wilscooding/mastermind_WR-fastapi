@@ -15,7 +15,7 @@
 - Standardized return contract to `(total_correct, correct_pos)` and updated tests accordingly.  
 - Chose Mastermind constraints for the challenge:  
   - Length = 4  
-  - Digits 0–7  
+  - Digits 0–9  
   - Duplicates allowed  
 
 ### Testing  

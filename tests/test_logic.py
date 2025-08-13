@@ -11,8 +11,8 @@ def test_evaluate_guess_basic():
     
 
 def test_evaluate_guess_duplicates():
-    secret = [1, 2, 3, 4]
-    guess = [1, 2, 2, 4]
+    secret = [1, 2, 3, 9]
+    guess = [1, 2, 2, 9]
     correct_position, correct_number = evaluate_guess(secret, guess)
     assert correct_position == 3
     assert correct_number == 3
