@@ -6,13 +6,19 @@ from app.infra.random_org import RandomOrgSecretProvider
 from app.infra.local_random import LocalRandomSecretProvider
 from app.infra.combined_secret import CombinedSecretProvider
 from app.services.game_service import GameService
+from app.infra.sqlalchemy_repo import SQLAlchemyGameRepository
+from app.infra.database import sessionLocal
+
 
 def _bool_env(var_name: str, default: bool) -> bool:
 
     return os.getenv(var_name, str(default)).lower() in ('true', '1', 'yes', 't', 'y', 'on')
 
 @lru_cache
-def get_game_repository() -> InMemoryGameRepository:
+def get_game_repository():
+    if _bool_env("USE_SQL", False):
+        database_session = sessionLocal()
+        return SQLAlchemyGameRepository(database_session=database_session)
     return InMemoryGameRepository()
 
 @lru_cache
@@ -34,4 +40,3 @@ def get_game_service() -> GameService:
     secret_provider = get_secret_provider()
     max_attempts = int(os.getenv("MAX_ATTEMPTS", 10))
     return GameService(game_repository=game_repository, secret_provider=secret_provider, max_attempts=max_attempts)
-

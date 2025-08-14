@@ -8,7 +8,8 @@ from app.api import deps
 
 @pytest.fixture(autouse=True)
 
-def override_dependencies():
+def override_dependencies(monkeypatch):
+    monkeypatch.setenv("USE_SQL", "false") 
     repo = InMemoryGameRepository()
 
     class FixedSecretProvider:

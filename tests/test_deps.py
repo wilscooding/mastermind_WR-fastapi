@@ -10,18 +10,21 @@ def _clear_caches():
     deps.get_game_repository.cache_clear()
 
 def test_secret_provider_uses_local_when_disabled(monkeypatch):
+    monkeypatch.setenv("USE_SQL", "false")  
     monkeypatch.setenv("USE_RANDOM", "0")
     _clear_caches()
     sp = deps.get_secret_provider()
     assert isinstance(sp, LocalRandomSecretProvider)
 
 def test_secret_provider_uses_combined_when_enabled(monkeypatch):
+    monkeypatch.setenv("USE_SQL", "false") 
     monkeypatch.setenv("USE_RANDOM", "1")
     _clear_caches()
     sp = deps.get_secret_provider()
     assert isinstance(sp, CombinedSecretProvider)
 
 def test_game_service_respects_max_attempts(monkeypatch):
+    monkeypatch.setenv("USE_SQL", "false") 
     monkeypatch.setenv("MAX_ATTEMPTS", "7")
     _clear_caches()
     game_service = deps.get_game_service()
@@ -29,7 +32,7 @@ def test_game_service_respects_max_attempts(monkeypatch):
     assert game_service.max_attempts == 7
 
 def test_lru_cache_means_env_change_needs_cache_clear(monkeypatch):
-    # First resolve with local
+    monkeypatch.setenv("USE_SQL", "false") 
     monkeypatch.setenv("USE_RANDOM", "0")
     _clear_caches()
     first = deps.get_secret_provider()

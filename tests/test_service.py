@@ -6,7 +6,9 @@ class FixedSecretProvider:
     def generate_secret(self):
         return [1, 2, 3, 4],    "fallback"
 
-def test_start_and_win_game():
+def test_start_and_win_game(monkeypatch):
+    monkeypatch.setenv("USE_SQL", "false") 
+
     game_repository = InMemoryGameRepository()
     secret_provider = FixedSecretProvider()
     game_service = GameService(game_repository, secret_provider)
