@@ -60,3 +60,90 @@
 
 ### Docs  
 - Update `README` with run steps and cURL examples.  
+
+
+## Journal  
+### Day 2: August 13, 2025  
+
+#### <ins>What I Accomplished Today</ins>  
+
+### - Infra & Ports  
+- Finished `ports.py` with stable interfaces:  
+  - `GameRepository`  
+  - `SecretProvider`  
+- Implemented `InMemoryGameRepository`:  
+  - Auto-incrementing IDs  
+  - Tracks history and win/loss state  
+- Added secret providers:  
+  - `LocalRandomSecretProvider` using Python’s `random`  
+  - `CombinedSecretProvider` with fallback logic  
+  - `RandomOrgSecretProvider` with:  
+    - Timeout and retry support  
+    - Response validation  
+    - Returns `(digits, "random_org")`  
+
+### - Dependency Injection (`deps.py`)  
+- Created `app/api/deps.py` to wire:  
+  - Game repository  
+  - Secret providers  
+  - `GameService`  
+- Added environment toggles:  
+  - `USE_RANDOM`  
+  - `RANDOM_ORG_TIMEOUT`  
+  - `RANDOM_ORG_RETRIES`  
+  - `MAX_ATTEMPTS`  
+- Confirmed `deps.py` belongs under `api/` (not `infra/`) and moved it accordingly  
+
+### - Game Service  
+- Implemented `GameService` with:  
+  - `start_game`  
+  - `make_guess`  
+  - `get_game`  
+- Finalized feedback fields:  
+  - `correct` (total matches)  
+  - `correct_pos` (exact matches)  
+
+### - Tests  
+- Wrote unit tests for:  
+  - `InMemoryGameRepository`  
+  - `CombinedSecretProvider` (fallback path)  
+  - `RandomOrgSecretProvider` (monkeypatched)  
+- Added tests for `deps.py` to verify:  
+  - Environment toggle behavior  
+  - `@lru_cache` behavior  
+- Fixed flaky naming/contract issues by standardizing field names and error strings  
+
+#### <ins>Today’s Blockers & Fixes</ins>  
+- Import errors from mismatched class/file names (`LocalRandomSecretProvider`, `CombinedSecretProvider`)  
+  - Standardized names, added missing `__init__.py`, cleared `__pycache__`  
+- Local provider returned a 1-item tuple due to trailing comma  
+  - Fixed to return `(digits, "fallback")`  
+- `RandomOrgSecretProvider` didn’t accept timeout/retries  
+  - Updated `__init__`, added validation and retry loop  
+- `@lru_cache` hid env changes  
+  - Added `.cache_clear()` in tests before re-resolving deps  
+
+#### <ins>What I Plan To-Do Tomorrow</ins>  
+
+### - HTTP API  
+- Expose endpoints with FastAPI:  
+  - `POST /games` → start  
+  - `POST /games/{id}/guess`  
+  - `GET /games/{id}`  
+
+### - Validation & Errors  
+- Add Pydantic schemas  
+- Implement consistent error handling:  
+  - `404 Not Found`  
+  - `409 Game Finished`  
+
+### - API Tests  
+- Use FastAPI’s `TestClient`  
+- Override DI with fixed secret for determinism  
+- Optional: opt-in live Random.org test gated by `LIVE_RANDOM_ORG`  
+
+### - Docs  
+- Update `README`  
+- Append cURL examples  
+
+

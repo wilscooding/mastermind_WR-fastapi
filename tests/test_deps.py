@@ -24,9 +24,9 @@ def test_secret_provider_uses_combined_when_enabled(monkeypatch):
 def test_game_service_respects_max_attempts(monkeypatch):
     monkeypatch.setenv("MAX_ATTEMPTS", "7")
     _clear_caches()
-    svc = deps.get_game_service()
-    assert isinstance(svc, GameService)
-    assert svc.max_attempts == 7
+    game_service = deps.get_game_service()
+    assert isinstance(game_service, GameService)
+    assert game_service.max_attempts == 7
 
 def test_lru_cache_means_env_change_needs_cache_clear(monkeypatch):
     # First resolve with local
