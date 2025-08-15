@@ -147,3 +147,42 @@
 - Append cURL examples  
 
 
+## Day 3: August 14, 2025  
+
+### **What I Accomplished Today**  
+
+- **API Progress**: Got all endpoints working and passing tests for `/games`, `/guesses`, and `/queries`. This means the game is fully playable via the API now — big milestone!  
+- **Testing Wins**:  
+  - Fixed the dependency overrides in tests so they no longer randomly pull in the SQL repo when not intended.  
+  - All test files now use `InMemoryGameRepository` unless explicitly testing the SQL path.  
+  - Resolved some tricky pytest fixture scope issues (turns out monkeypatch scope mismatch was my nemesis).  
+- **SQLAlchemy Integration**:  
+  - Added the option to switch between in-memory and SQLAlchemy repo using the `USE_SQL` env var.  
+  - Now, game IDs persist and increment in the SQL version, which feels a lot more “real game service” than just resetting in memory.  
+- **Code Clean-Up**:  
+  - Standardized variable naming in `deps.py` and service layer for clarity.  
+  - Removed duplicate `get_sqlalchemy_game_repository` since it was redundant.  
+
+---
+
+### **Today’s Blockers**  
+
+- **Win Condition in Tests**: Spent more time than expected debugging why a test guess wasn’t marking the game as won. Turned out to be a dependency override issue — the fixed secret provider wasn’t actually being used in some tests. Once overrides were wired correctly, green lights all the way.  
+- **Route Naming**: Had to double-check route definitions. I’d been calling `/guess` in tests but the API route was `/guesses` — small mismatch, but enough to cause 404s until I fixed it.  
+
+---
+
+### **What I Plan To-Do Tomorrow**  
+
+- **New Features**:  
+  - Add **game modes** (easy, normal, hard) and **custom difficulty settings** like code length, digit range, and max attempts.  
+  - Update `schemas.py` to accept `CreateGameRequest` with difficulty settings.  
+  - Make secret providers (`LocalRandomSecretProvider` & `RandomOrgSecretProvider`) flexible with length and digit range.  
+  - Update CLI to let the player choose a mode before starting.  
+
+- **Testing**:  
+  - Write new tests for each game mode, ensuring win/loss logic and attempt limits adjust properly.  
+
+- **Future Thoughts**:  
+  - Explore adding a database leaderboard for high scores and fastest wins.  
+  - Maybe a “challenge mode” with one attempt only (sudden death).  

@@ -7,7 +7,9 @@ class GameService:
         self.secret_provider = secret_provider
         self.max_attempts = max_attempts
 
-    def start_game(self) -> int:
+    def start_game(self, str = "normal", length: Optional[int] = None, max_attemps: Optional[int] = None, min_num: Optional[int] = 0, max_num: Optional[int] = 9) -> int:
+
+        
         secret, mode = self.secret_provider.generate_secret()
         return self.game_repository.create_game(secret, mode)
     
