@@ -1,23 +1,21 @@
-from pydantic import BaseModel, conint, conlist
+from pydantic import BaseModel, ConfigDict, conint, conlist
 from typing import List, Optional, Annotated
 import annotated_types
 
 Digit = conint(ge=0, le=9)  
+# minimal length will be 1 and max length will be 10
 
-GuessList = conlist(Digit, min_length=4, max_length=4)= Annotated[List[Digit], annotated_types.Len(4)]
+GuessList = Annotated[List[Digit], annotated_types.Len(min_length=1, max_length=10)]
 
 class GuessRequest(BaseModel):
     guess: GuessList
 
-    class Config:
-        json_schema_extra = {
-            "example": {"guess": [1, 2, 3, 4]}
-        }
+
 
 class CreateGameRequest(BaseModel):
     mode: Optional[str] = "normal"
     length: Optional[int] = None
-    max_attemps: Optional[int] = None
+    max_attempts: Optional[int] = None
     min_num: Optional[int] = None
     max_num: Optional[int] = None
 
@@ -36,7 +34,7 @@ class GameResponse(BaseModel):
     won: bool
     lost: bool
     mode: str
-    secret: Optional[List[int]] = None
+    secret: Optional[List[int]] 
 
 class CreateGameResponse(BaseModel):
     id: int

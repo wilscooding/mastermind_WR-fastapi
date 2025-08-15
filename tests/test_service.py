@@ -3,7 +3,7 @@ from app.infra.memory_repo import InMemoryGameRepository
 
 
 class FixedSecretProvider:
-    def generate_secret(self):
+    def generate_secret(self, length=None, min_num=None, max_num=None):
         return [1, 2, 3, 4],    "fallback"
 
 def test_start_and_win_game(monkeypatch):

@@ -39,4 +39,28 @@ def test_generate_secret():
     assert all(0 <= num <= 9 for num in secret)
     assert isinstance(code_str, str)
     assert code_str == "random_org"
+
+def test_random_org_provider_easy_mode(monkeypatch):
+    def fake_get(url, params=None, timeout=None):
+        return DummyResponse("7\n8\n9\n")
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    provider = RandomOrgSecretProvider(length=3)
+    secret, label = provider.generate_secret()
+
+    assert secret == [7, 8, 9]
+    assert label == "random_org"    
+
+def test_random_org_provider_hard_mode(monkeypatch):
+    def fake_get(url, params=None, timeout=None):
+        return DummyResponse("0\n1\n2\n3\n4\n")
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+
+    provider = RandomOrgSecretProvider(length=5)
+    secret, label = provider.generate_secret()
+
+    assert secret == [0, 1, 2, 3, 4]
+    assert label == "random_org"
     

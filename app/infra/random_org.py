@@ -1,4 +1,3 @@
-# using random.org for true randomness
 import httpx
 from typing import List, Tuple
 
@@ -14,30 +13,41 @@ class RandomOrgSecretProvider:
         self.timeout = timeout
         self.retries = retries
     
-    def generate_secret(self) -> Tuple[List[int], str]:
+    def generate_secret(self, length=None, min_num=None, max_num=None) -> Tuple[List[int], str]:
+        length = length or self.length
+        min_num = min_num if min_num is not None else self.min_num
+        max_num = max_num if max_num is not None else self.max_num
+
         params = {
-            "num": self.length,
-            "min": self.min_num,
-            "max": self.max_num,
+            "num": length,
+            "min": min_num,
+            "max": max_num,
             "col": 1,
             "base": 10,
             "format": "plain",
             "rnd": "new"
         }
 
-        last_exception = None
-        for _ in range(self.retries + 1):
-            try:
-                response = httpx.get(self.BASE_URL, params=params, timeout=self.timeout)
-                response.raise_for_status()
-                numbers = [int(x) for x in response.text.strip().split()]
-                if len(numbers) != self.length:
-                    raise ValueError(f"Random.org returned {len(numbers)} numbers, expected {self.length}")
-                if any(n < self.min_num or n > self.max_num for n in numbers):
-                    raise ValueError("Random.org returned out-of-range digits")
-                # ✅ Always return "random_org" label
-                return numbers, "random_org"
-            except Exception as e:
-                last_exception = e
+        response = httpx.get(self.BASE_URL, params=params, timeout=self.timeout)
+        response.raise_for_status()
+        numbers = list(map(int, response.text.strip().split()))
+        return numbers, "random_org"
+    
+    
 
-        raise RuntimeError(f"Failed to fetch random numbers from Random.org: {last_exception}")
+        # last_exception = None
+        # for _ in range(self.retries + 1):
+        #     try:
+        #         response = httpx.get(self.BASE_URL, params=params, timeout=self.timeout)
+        #         response.raise_for_status()
+        #         numbers = [int(x) for x in response.text.strip().split()]
+        #         if len(numbers) != self.length:
+        #             raise ValueError(f"Random.org returned {len(numbers)} numbers, expected {self.length}")
+        #         if any(n < self.min_num or n > self.max_num for n in numbers):
+        #             raise ValueError("Random.org returned out-of-range digits")
+        #         # ✅ Always return "random_org" label
+        #         return numbers, "random_org"
+        #     except Exception as e:
+        #         last_exception = e
+
+        # raise RuntimeError(f"Failed to fetch random numbers from Random.org: {last_exception}")

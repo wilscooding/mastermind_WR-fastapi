@@ -23,7 +23,7 @@ class SQLAlchemyGameRepository:
         game = self.database_session.query(Game).filter(Game.id == game_id).first()
         if game:
             game.secret = game_data['secret']
-            game.attempts_used = game_data["attemps_used"]
+            game.attempts_used = game_data["attempts_used"]
             game.history = game_data["history"]
             game.won = game_data["won"]
             game.lost = game_data["lost"]
