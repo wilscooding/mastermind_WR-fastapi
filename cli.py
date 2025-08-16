@@ -53,6 +53,17 @@ def get_game_state(game_id):
     response.raise_for_status()
     return response.json()
 
+def get_hint(game_id):
+    response = requests.get(f"{BASE_URL}/games/{game_id}/hint")
+    if response.status_code == 200:
+        return response.json()
+    elif response.status_code == 404:
+        print("Game not found.")
+        exit(1)
+    else:
+        print("Failed to get hint.", response.text)
+        exit(1)
+
 def play():
     mode = choose_mode()
     game_length = MODES[mode]["length"]
@@ -61,9 +72,24 @@ def play():
     state = get_game_state(game_id)
     print(f"\nNew game started: Mode: {mode.capitalize()} | GAME ID: {game_id}")
     print(f"You have {MODES[mode]['max_attempts']} attempts to guess {game_length} digits.")
+    print("Type your guess, or 'hint' to request a hint (only after your first guess)")
+    print(" Hints cost 1 attempt, so use them wisely!")
 
     while True:
-        guess = input(f"Enter your guess ({game_length} digits): ").strip()
+        guess = input(f"Enter your guess ({game_length} digits) or 'hint': ").strip()
+
+        if guess.lower() == "hint":
+            state = get_game_state(game_id)
+            if not state['history']:
+                print("You need to make at least one guess before requesting a hint.")
+                continue
+
+            hint = get_hint(game_id)
+            if hint:
+                print(f"Hint: Position {hint['position']} is digit {hint['digit']}")
+                state = get_game_state(game_id)
+                print(f"Attempts left: {state['attempts_left']}")
+                continue
 
         if not guess.isdigit() or len(guess) != game_length:
             print(f"Invalid guess. please enter {game_length} digits.")
@@ -76,7 +102,9 @@ def play():
 
         if result.get("last_feedback"):
             feedback = result["last_feedback"]
-            print(f"feedback: {feedback['correct_position']} correct position(s), {feedback['correct_number']} correct number(s)")
+            print(f"Feedback: {feedback['correct_position']} correct position(s), {feedback['correct_number']} correct number(s)")
+
+        print(f"Attempts left: {result['attempts_left']}")
 
         if result.get("won"):
             print("🏆 You won!")

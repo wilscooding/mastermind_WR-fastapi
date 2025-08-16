@@ -14,7 +14,7 @@ def override_dependencies(monkeypatch):
 
     class FixedSecretProvider:
         def generate_secret(self, length=4, min_num=0, max_num=9):
-            return [1, 2, 3, 4], "fixed"
+            return list(range(min_num, min_num + length)), "fixed_provider"
 
     deps.get_game_repository = lambda: repo
     deps.get_secret_provider = lambda: FixedSecretProvider()
@@ -47,7 +47,7 @@ def test_make_guess_correct_and_incorrect():
     assert guess_data["last_feedback"]["correct_position"] >= 0
     assert guess_data["last_feedback"]["correct_number"] >= 0
 
-    guess_res = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3, 4]})
+    guess_res = client.post(f"/games/{game_id}/guesses", json={"guess": [0, 1, 2, 3]})
     assert guess_res.status_code == 200
     guess_data = guess_res.json()
     assert guess_data["won"] is True
@@ -66,8 +66,10 @@ def test_get_game_state():
     assert "guess" in data["history"][0]
 
 
-def gest_get_hint_success():
+def test_get_hint_success():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
+
+    client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
     # request a hint
     response = client.get(f"/games/{game_id}/hint")
@@ -99,18 +101,21 @@ def test_hints_do_not_repeat_positions():
 
 
 
-# def test_hints_exhaust_all_positions():
-#     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
+def test_hints_exhaust_all_positions():
+    game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
 
-#     # In easy mode, secret has 3 digits → max 3 hints
-#     for _ in range(3):
-#         res = client.get(f"/games/{game_id}/hint")
-#         assert res.status_code == 200
+    client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
-#     # Asking again should fail
-#     res = client.get(f"/games/{game_id}/hint")
-#     assert res.status_code == 400
-#     assert res.json()["detail"] == "No more hints available"
+
+    # In easy mode, secret has 3 digits → max 3 hints
+    for _ in range(3):
+        res = client.get(f"/games/{game_id}/hint")
+        assert res.status_code == 200
+
+    # Asking again should fail
+    res = client.get(f"/games/{game_id}/hint")
+    assert res.status_code == 400
+    assert res.json()["detail"] == "No more hints available"
 
 def test_hint_consumes_attempt():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
@@ -127,7 +132,7 @@ def test_hint_consumes_attempt():
     assert "history" in game_state
     assert isinstance(game_state["history"], list)
     assert len(game_state["history"]) == 1
-    assert game_state["history"][0] == [1, 2, 3]
+    assert game_state["history"][0]["guess"] == [1, 2, 3]
 
     # Now request a hint
     hint_response = client.get(f"/games/{game_id}/hint")

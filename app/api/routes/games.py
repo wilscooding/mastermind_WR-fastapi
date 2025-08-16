@@ -1,4 +1,3 @@
-from unittest import result
 from fastapi import APIRouter, Body, Depends, HTTPException
 from app.api.schemas import GuessRequest, CreateGameOut, GuessOut, CreateGameRequest, HintOut
 from app.api.deps import get_game_service
@@ -9,8 +8,12 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 @router.post("/", response_model=CreateGameOut)
 def create_game(body: Optional[CreateGameRequest] = Body(default=None), game_service: GameService = Depends(get_game_service)):
+    print("DEBUG create_game body:", body.dict() if body else None)
+
     if body is None:
         game_id = game_service.start_game(mode="normal")
+    elif body.mode in ["easy", "normal", "hard"]:
+        game_id = game_service.start_game(mode=body.mode)
     else:
         game_id = game_service.start_game(
             mode=body.mode or "normal",

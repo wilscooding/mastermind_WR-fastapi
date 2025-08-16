@@ -10,23 +10,35 @@ class GameService:
 
     def start_game(self, mode: str = "normal", length: Optional[int] = None, max_attempts: Optional[int] = None, min_num: Optional[int] = 0, max_num: Optional[int] = 9) -> int:
 
+        print(f"DEBUG start_game called with mode={mode}, length={length}, max_attempts={max_attempts}, min_num={min_num}, max_num={max_num}")
+
         difficulty_presets = {
             "easy": {"length": 3, "max_attempts": 12, "min_num": 0, "max_num": 6},
             "normal": {"length": 4, "max_attempts": 10, "min_num": 0, "max_num": 9},
             "hard": {"length": 5, "max_attempts": 8, "min_num": 0, "max_num": 9}
         }
 
-        if mode in difficulty_presets: 
+        # if mode in difficulty_presets: 
+        #     selected_difficulty = difficulty_presets[mode]
+        
+        # else:
+        #     selected_difficulty = {
+        #         "length": length or 4,
+        #         "max_attempts": max_attempts or 10,
+        #         "min_num": min_num,
+        #         "max_num": max_num
+        #     }
+
+        if mode in difficulty_presets and length is None and max_attempts is None:
             selected_difficulty = difficulty_presets[mode]
         
         else:
             selected_difficulty = {
-                "length": length or 4,
-                "max_attempts": max_attempts or 10,
-                "min_num": min_num,
-                "max_num": max_num
+                "length": length or (difficulty_presets.get(mode, {}).get("length", 4)),
+                "max_attempts": max_attempts or (difficulty_presets.get(mode, {}).get("max_attempts", 10)),
+                "min_num": min_num if min_num is not None else (difficulty_presets.get(mode, {}).get("min_num", 0)),
+                "max_num": max_num if max_num is not None else (difficulty_presets.get(mode, {}).get("max_num", 9)),
             }
-
 
         secret, _ = self.secret_provider.generate_secret(
             length=selected_difficulty["length"],
@@ -53,7 +65,7 @@ class GameService:
         if len(guess) != expected_length:
             return {"error": f"Guess must be {expected_length} digits long"}            
         
-        correct_position, correct_number = evaluate_guess(game['secret'], guess)
+        correct_position, correct_number = evaluate_guess(guess,game['secret'])
 
         game['history'].append({
             "guess": guess,
@@ -93,7 +105,7 @@ class GameService:
         # #rule 2: cannot request hint if only one attempt remains
         attempts_left = self.max_attempts - game['attempts_used']
         if attempts_left <= 1:
-            raise ValueError("Cannot request hint if only one attempt remains")
+            raise ValueError("Hint not allowed on final attempt")
 
         available_positions = [
             index for index in range(len(game['secret'])) if index not in game["revealed_hints"]
