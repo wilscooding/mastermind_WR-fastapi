@@ -106,7 +106,6 @@ def test_hints_exhaust_all_positions():
 
     client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
-
     # In easy mode, secret has 3 digits → max 3 hints
     for _ in range(3):
         res = client.get(f"/games/{game_id}/hint")

@@ -8,7 +8,7 @@ class Game(Base):
     id = Column(Integer, primary_key=True, index=True)
     secret = Column(JSON, nullable=False)
     attempts_used = Column(Integer, default=0)
-    history = Column(JSON, default=[])
+    history = Column(JSON, default=lambda: [])
     won = Column(Boolean, default=False)
     lost = Column(Boolean, default=False)
     mode = Column(String, default='fallback')

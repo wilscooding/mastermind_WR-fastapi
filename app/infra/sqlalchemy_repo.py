@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import Dict, List, Optional
 from app.infra.models import Game
-from app. infra.database import sessionLocal
+from app.infra.database import sessionLocal
 
 
 class SQLAlchemyGameRepository:
