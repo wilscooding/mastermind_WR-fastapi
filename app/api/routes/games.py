@@ -1,5 +1,6 @@
+from unittest import result
 from fastapi import APIRouter, Body, Depends, HTTPException
-from app.api.schemas import GuessRequest, CreateGameOut, GuessOut, CreateGameRequest
+from app.api.schemas import GuessRequest, CreateGameOut, GuessOut, CreateGameRequest, HintOut
 from app.api.deps import get_game_service
 from app.services.game_service import GameService
 from typing import Optional
@@ -28,8 +29,24 @@ def make_guess(
     game_service: GameService = Depends(get_game_service)
 ):
     result = game_service.make_guess(game_id, body.guess)
-    
+
     if "error" in result:
-        raise HTTPException(status_code=404, detail=result["error"])
+        # You can choose 404 or 400 based on the error type
+        status = 404 if result["error"] == "Game not found" else 400
+        raise HTTPException(status_code=status, detail=result["error"])
+
     return result
 
+
+
+
+@router.get("/{game_id}/hint", response_model=HintOut)
+def get_hint(
+    game_id: int,
+    game_service: GameService = Depends(get_game_service)
+):
+    try:
+        result = game_service.get_hint(game_id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return result

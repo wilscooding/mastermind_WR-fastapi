@@ -185,4 +185,56 @@
 
 - **Future Thoughts**:  
   - Explore adding a database leaderboard for high scores and fastest wins.  
-  - Maybe a “challenge mode” with one attempt only (sudden death).  
+  - Maybe a “challenge mode” with one attempt only (sudden death).
+
+
+
+# Day 4 Journal – Mastermind Backend Journey 
+
+Today was a **big one**. We kept pushing our Mastermind backend forward and reached some cool milestones. Here’s the recap of what went down:
+
+---
+
+##  Progress
+
+1. **Reviewed requirements from REACH challenge**
+   - Double-checked that our current API matches what the challenge asked for.
+   - Confirmed that basic gameplay (create game, make guess, get game state) is all working.
+
+2. **Game Modes & Difficulty**
+   - Added support for **Easy, Normal, Hard** presets.
+     - Easy → 3 digits, 12 attempts, numbers 0–6
+     - Normal → 4 digits, 10 attempts, numbers 0–9
+     - Hard → 5 digits, 8 attempts, numbers 0–9
+   - Updated both the API and CLI so guesses must match the difficulty length.
+
+3. **CLI Updates**
+   - Fixed the CLI so when you pick a mode, it actually enforces the correct number of digits.
+   - Added debug printing of the secret to make sure random/org + difficulty works correctly.
+   - CLI now feels much closer to a real playable game.
+
+4. **Hints Feature**
+   - Added `get_hint()` method inside `GameService`.
+   - Hints reveal one random unrevealed digit from the secret at the correct position.
+   - Hints consume **one attempt**.
+   - Prevents giving more hints once all positions are revealed.
+   - Stored revealed hints in game state to track progress.
+
+---
+
+## Next Steps
+
+- Add a **new endpoint** in API (`/games/{game_id}/hint`) so clients (or CLI) can request hints.
+- Update **schemas** so `HintOut` is returned properly from the API.
+- Update **CLI** to let players type `hint` to get help.
+- Write **unit tests** for hints (both service + API level).
+- Commit everything we did so far before moving on.
+
+---
+
+## Reflection
+
+We’re getting closer to having a really solid Mastermind backend. The difficulty system feels solid, and hints are a fun addition. Next, we’ll wire hints all the way through (API → CLI → tests). After that, we can start dreaming about bigger features (online vs local games, user accounts, etc.).
+
+Day 4 = productive.
+

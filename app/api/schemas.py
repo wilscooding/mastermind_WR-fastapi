@@ -60,3 +60,7 @@ class GameOut(BaseModel):
     mode: str
     secret: Optional[List[int]] = None
 
+class HintOut(BaseModel):
+    position: int
+    digit: int
+    

@@ -81,18 +81,27 @@ class GameService:
 
         game = self.game_repository.get_game(game_id)
         if not game:
-            return {"error": "Game not found"}
+            raise ValueError("Game not found")
 
         if "revealed_hints" not in game:
             game["revealed_hints"] = []
+
+        #rule 1: must make at least one guess before using hints
+        if len(game['history']) == 0:
+            raise ValueError("Must make at least one guess before using hints")
+
+        # #rule 2: cannot request hint if only one attempt remains
+        attempts_left = self.max_attempts - game['attempts_used']
+        if attempts_left <= 1:
+            raise ValueError("Cannot request hint if only one attempt remains")
 
         available_positions = [
             index for index in range(len(game['secret'])) if index not in game["revealed_hints"]
         ]
 
         if not available_positions:
-            return {"error": "No more hints available"}
-        
+            raise ValueError("No more hints available")
+
         position = random.choice(available_positions)
         digit = game['secret'][position]
 
