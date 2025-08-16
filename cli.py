@@ -59,7 +59,6 @@ def play():
     game_id = start_game(mode)
     
     state = get_game_state(game_id)
-    print(f"The secret was: {state['secret']}")
     print(f"\nNew game started: Mode: {mode.capitalize()} | GAME ID: {game_id}")
     print(f"You have {MODES[mode]['max_attempts']} attempts to guess {game_length} digits.")
 
@@ -88,34 +87,6 @@ def play():
             print(f"The secret was: {state['secret']}")
             break
 
-    # print("=== Mastermind CLI ===")
-    # print("Try to guess the 4-digit secret code (digits 0–9, duplicates allowed).")
-    # print("Type 'exit' to quit at any time.\n")
-
-    # game_id = start_game()
-
-    # while True:
-    #     guess = input("Enter your guess (4 digits): ").strip()
-    #     if guess.lower() == "exit":
-    #         print("🚪 Exiting game.")
-    #         break
-
-    #     if not guess.isdigit() or len(guess) != 4:
-    #         print("❌ Invalid guess. Must be exactly 4 digits.")
-    #         continue
-
-    #     result = make_guess(game_id, guess)
-    #     print(f"Feedback: {result['last_feedback']['correct_position']} correct position, "
-    #           f"{result['last_feedback']['correct_number']} correct number(s)")
-
-    #     if result["won"]:
-    #         print("🏆 You won!")
-    #         break
-    #     elif result["lost"]:
-    #         print("💀 You lost!")
-    #         state = get_game_state(game_id)
-    #         print(f"The secret was: {state['secret']}")
-    #         break
 
 if __name__ == "__main__":
     play()

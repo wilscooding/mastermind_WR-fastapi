@@ -1,3 +1,4 @@
+import random
 from typing import List, Optional, Dict
 from app.domain.logic import evaluate_guess, is_win
 
@@ -34,7 +35,14 @@ class GameService:
         )
 
         self.max_attempts = selected_difficulty["max_attempts"]
-        return self.game_repository.create_game(secret, mode)
+
+        # initialize with no revealed hints
+        game_id = self.game_repository.create_game(secret, mode)
+        game_data = self.game_repository.get_game(game_id)
+        game_data['revealed_hints'] = []
+        self.game_repository.save_game(game_id, game_data)
+
+        return game_id
     
     def make_guess(self, game_id: int, guess: List[int]) -> Dict:
         game = self.game_repository.get_game(game_id)
@@ -59,6 +67,7 @@ class GameService:
         self.game_repository.save_game(game_id, game)
 
         return {
+            "id": game_id,
             "attempts_left": self.max_attempts - game['attempts_used'],
             "won": game['won'],
             "lost": game['lost'],
@@ -68,6 +77,30 @@ class GameService:
             }
         }
     
+    def get_hint(self, game_id: int) -> Dict:
+
+        game = self.game_repository.get_game(game_id)
+        if not game:
+            return {"error": "Game not found"}
+
+        if "revealed_hints" not in game:
+            game["revealed_hints"] = []
+
+        available_positions = [
+            index for index in range(len(game['secret'])) if index not in game["revealed_hints"]
+        ]
+
+        if not available_positions:
+            return {"error": "No more hints available"}
+        
+        position = random.choice(available_positions)
+        digit = game['secret'][position]
+
+        game['revealed_hints'].append(position)
+        game['attempts_used'] += 1
+        self.game_repository.save_game(game_id, game)
+
+        return {"position": position, "digit": digit}
 
     def get_game(self, game_id: int) -> Optional[Dict]:
         game = self.game_repository.get_game(game_id)
