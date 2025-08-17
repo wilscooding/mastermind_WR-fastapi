@@ -29,3 +29,7 @@ class SQLAlchemyGameRepository:
             game.lost = game_data["lost"]
             game.mode = game_data["mode"] 
             self.database_session.commit()
+
+    def list_games(self) -> List[Dict]:
+        games = self.database_session.query(Game).all()
+        return [game.__dict__ for game in games]

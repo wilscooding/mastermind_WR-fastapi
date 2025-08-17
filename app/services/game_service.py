@@ -139,3 +139,5 @@ class GameService:
             "secret": game['secret'] if game['won'] or game['lost'] else None
         }
 
+    def list_games(self) -> List[Dict]:
+        return self.game_repository.list_games()

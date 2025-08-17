@@ -8,7 +8,7 @@ router = APIRouter(prefix="/games", tags=["games"])
 
 @router.post("/", response_model=CreateGameOut)
 def create_game(body: Optional[CreateGameRequest] = Body(default=None), game_service: GameService = Depends(get_game_service)):
-    print("DEBUG create_game body:", body.dict() if body else None)
+    print("DEBUG create_game body:", body.model_dump() if body else None)
 
     if body is None:
         game_id = game_service.start_game(mode="normal")
@@ -39,6 +39,10 @@ def make_guess(
         raise HTTPException(status_code=status, detail=result["error"])
 
     return result
+
+@router.get("/", response_model=list[CreateGameOut])
+def list_games(game_service: GameService = Depends(get_game_service)):
+    return game_service.list_games()
 
 
 

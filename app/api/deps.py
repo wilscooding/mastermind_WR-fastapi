@@ -6,7 +6,7 @@ from app.infra.random_org import RandomOrgSecretProvider
 from app.infra.local_random import LocalRandomSecretProvider
 from app.infra.combined_secret import CombinedSecretProvider
 from app.services.game_service import GameService
-from app.infra.sqlalchemy_repo import SQLAlchemyGameRepository
+from app.infra.sqlalchemy_game_repo import SQLAlchemyGameRepository
 from app.infra.database import sessionLocal
 
 

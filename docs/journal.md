@@ -238,3 +238,70 @@ We’re getting closer to having a really solid Mastermind backend. The difficul
 
 Day 4 = productive.
 
+# Day 5 Journal – Mastermind Backend Journey  
+
+---
+
+##  Progress  
+
+### Hints Endpoints  
+- Exposed new **`POST /games/{id}/hint`** route in the API.  
+- Connected it to `GameService.get_hint()` so clients can request hints.  
+- Added Pydantic `HintOut` schema to standardize API responses.  
+
+### CLI Integration  
+- Updated CLI so players can type **`hint`** during gameplay.  
+- CLI now calls the service method, deducts an attempt, and shows the revealed digit in the correct position.  
+- Prevents hints after all positions are revealed or if the player is on the final attempt.  
+
+### Tests  
+- Added **service-level tests** for:  
+  - First hint request → reveals one position.  
+  - Multiple hints → no duplicate positions.  
+  - Exhausting all positions.  
+  - Preventing hints after win/loss.  
+- Added **API-level tests** for:  
+  - `POST /games/{id}/hint` returns a `HintOut`.  
+  - Invalid requests (nonexistent game, requesting hints when not allowed).  
+
+### Code Cleanup  
+- Standardized error handling for hints (`400` when hints not available, `409` if game already finished).  
+- Refactored `GameService` so hint logic uses the same attempt counter as guesses.  
+- Simplified schemas to reduce duplication.  
+
+---
+
+## ⚠️ Blockers  
+
+- **Test Flakiness**  
+  - Early tests failed because hints were being repeated.  
+  - Fixed by explicitly tracking revealed indices in game state.  
+
+- **CLI UX**  
+  - At first, hints weren’t clearly showing which position was revealed.  
+  - Improved output to display the partially revealed secret with `_` placeholders.  
+
+- **Schema Evolution**  
+  - Had to rework `GameOut` schema to include `revealed_hints`, otherwise API couldn’t serialize hint progress.  
+
+---
+
+## Next Steps  
+
+### Leaderboards  
+- Start designing a simple SQL schema for tracking:  
+  - Username / user_id  
+  - Games played, won/lost  
+  - Fewest attempts win  
+  - Fastest win (optional timestamp field)  
+
+### Scoring System  
+- Decide how points are awarded:  
+  - Win = base points + bonus for attempts left  
+  - Hint = subtract penalty points  
+- Update service + schemas to include score.  
+
+### Docs & Examples  
+- Update `README` with new `/hint` endpoint usage.  
+- Add example CLI session showing a game with hints.  
+

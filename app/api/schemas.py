@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, conint, conlist
+from pydantic import BaseModel, ConfigDict, conint, EmailStr
 from typing import List, Optional, Annotated
 import annotated_types
 
@@ -63,4 +63,13 @@ class GameOut(BaseModel):
 class HintOut(BaseModel):
     position: int
     digit: int
-    
+
+class UserSignup(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
