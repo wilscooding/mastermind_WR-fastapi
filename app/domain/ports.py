@@ -1,5 +1,11 @@
 from typing import Protocol, List, Dict, Optional, Tuple
 
+"""Abstract interfaces (ports) for repositories and services.
+
+Defines contracts for GameRepository, LeaderboardRepository, and other persistence adapters.
+"""
+
+
 class GameRepository(Protocol):
     def create_game(self, secret: List[int], mode: str) -> int: ...
     def get_game(self, game_id: int) -> Optional[Dict]: ...

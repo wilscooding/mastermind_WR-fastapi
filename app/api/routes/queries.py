@@ -3,6 +3,12 @@ from app.api.schemas import GameOut
 from app.api.deps import get_game_service
 from app.services.game_service import GameService
 
+"""API routes for queries and debugging.
+
+Can be extended with custom queries or admin endpoints.
+"""
+
+
 router = APIRouter(tags=["queries"])
 
 @router.get("/games/{game_id}", response_model=GameOut)

@@ -10,6 +10,12 @@ from app.services.game_service import GameService
 from app.infra.sqlalchemy_game_repo import SQLAlchemyGameRepository
 from app.infra.database import sessionLocal
 
+"""Dependency injection utilities for FastAPI routes.
+
+Provides functions to get database sessions, game service, and other shared dependencies.
+"""
+
+
 
 def _bool_env(var_name: str, default: bool) -> bool:
 

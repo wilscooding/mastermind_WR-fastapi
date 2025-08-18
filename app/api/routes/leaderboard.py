@@ -5,6 +5,12 @@ from app.services.leaderboard_service import LeaderboardService
 from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
 from app.api.schemas import LeaderboardOut
 
+"""API routes for leaderboard operations.
+
+Provides endpoints to fetch leaderboard rankings and user scores.
+"""
+
+
 router = APIRouter(prefix="/leaderboard", tags=["leaderboard"])
 
 @router.get("/", response_model=list[LeaderboardOut])

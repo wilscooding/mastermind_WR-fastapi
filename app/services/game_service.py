@@ -6,6 +6,13 @@ from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
 from app.services.leaderboard_service import LeaderboardService
 from sqlalchemy.orm import Session
 
+"""Game service layer.
+
+Encapsulates business logic for starting games, making guesses, using hints,
+tracking attempts, and recording scores to the leaderboard.
+"""
+
+
 ENV = os.getenv("ENV", "local")
 
 
@@ -17,7 +24,6 @@ class GameService:
 
     def start_game(self, mode: str = "normal", length: Optional[int] = None, max_attempts: Optional[int] = None, min_num: Optional[int] = 0, max_num: Optional[int] = 9, user_id: Optional[int] = None) -> int:
 
-        print(f"DEBUG start_game called with mode={mode}, length={length}, max_attempts={max_attempts}, min_num={min_num}, max_num={max_num}, user_id={user_id}")
 
         difficulty_presets = {
             "easy": {"length": 3, "max_attempts": 12, "min_num": 0, "max_num": 6},

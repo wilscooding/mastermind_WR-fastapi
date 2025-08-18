@@ -1,5 +1,8 @@
 from typing import List, Tuple
 
+"""Secret provider that combines multiple sources (e.g., local, external APIs)."""
+
+
 class CombinedSecretProvider:
     def __init__(self, primary, fallback):
         self.primary = primary

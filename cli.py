@@ -2,6 +2,12 @@ import os
 import json
 import requests
 
+"""Command-line interface for playing Mastermind.
+
+Allows users to play the game interactively from the terminal.
+"""
+
+
 BASE_URL = "http://127.0.0.1:8000"
 TOKEN_FILE = os.path.expanduser("~/.mastermind_token")
 

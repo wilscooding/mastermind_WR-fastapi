@@ -11,6 +11,12 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_database
 from app.infra import models
 
+"""Authentication service.
+
+Handles password hashing, JWT token creation/validation, and current user retrieval.
+"""
+
+
 load_dotenv()
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

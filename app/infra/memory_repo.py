@@ -1,6 +1,9 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
+"""In-memory game repository implementation for testing and local development."""
+
+
 class InMemoryGameRepository:
     def __init__ (self):
         self._storage: Dict[int, Dict] = {}

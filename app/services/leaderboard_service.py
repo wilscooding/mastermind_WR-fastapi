@@ -1,5 +1,11 @@
 from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
 
+"""Leaderboard service.
+
+Handles recording scores, ranking users, and retrieving leaderboard data.
+"""
+
+
 class LeaderboardService:
     def __init__(self, repo: SQLAlchemyLeaderboardRepo):
         self.repo = repo

@@ -1,6 +1,9 @@
 import random
 from typing import List, Tuple
 
+"""Local random number generator for secret code creation."""
+
+
 class LocalRandomSecretProvider:
     def __init__(self, length: int = 4, min_num: int = 0, max_num: int= 9):
         self.length = length

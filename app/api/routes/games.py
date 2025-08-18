@@ -8,13 +8,18 @@ from app.services.auth_service import get_current_user
 from typing import Any, Optional
 from sqlalchemy.orm import Session
 
+"""API routes for game-related operations.
+
+Includes endpoints to create games, make guesses, list games, and retrieve game state.
+"""
+
+
 router = APIRouter(prefix="/games", tags=["games"])
 
 ENV = os.getenv("ENV", "local")
 
 @router.post("/", response_model=CreateGameOut)
 def create_game(body: Optional[CreateGameRequest] = Body(default=None), game_service: GameService = Depends(get_game_service), current_user: Any = Depends(get_current_user) if ENV == "production" else None):
-    print("DEBUG create_game body:", body.model_dump() if body else None)
 
     user_id = current_user.id if current_user else None
 
@@ -77,7 +82,6 @@ def create_local_game(
     body: Optional[CreateGameRequest] = Body(default=None),
     game_service: GameService = Depends(get_game_service)
 ):
-    print("DEBUG create_local_game body:", body.model_dump() if body else None)
 
     if body is None:
         game_id = game_service.start_game(mode="normal")
@@ -100,7 +104,6 @@ def create_online_game(
     game_service: GameService = Depends(get_game_service),
     current_user: User = Depends(get_current_user)
 ):
-    print("DEBUG create_online_game body:", body.model_dump() if body else None)
 
     if body is None:
         game_id = game_service.start_game(mode="normal", user_id=current_user.id)

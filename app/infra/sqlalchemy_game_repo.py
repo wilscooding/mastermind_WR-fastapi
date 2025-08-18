@@ -3,6 +3,9 @@ from typing import Dict, List, Optional
 from app.infra.models import Game
 from app.infra.database import sessionLocal
 
+"""SQLAlchemy repository implementation for persisting games in the database."""
+
+
 
 class SQLAlchemyGameRepository:
     def __init__(self, database_session: Session = None):

@@ -4,6 +4,9 @@ from sqlalchemy.orm import relationship
 from app.infra.database import Base
 from datetime import datetime
 
+"""SQLAlchemy ORM models for User, Game, and LeaderboardEntry."""
+
+
 class Game(Base):
     __tablename__ = "games"
 

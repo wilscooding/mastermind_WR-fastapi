@@ -2,7 +2,12 @@ from pydantic import BaseModel, ConfigDict, conint, EmailStr
 from typing import List, Optional, Annotated
 import annotated_types
 
-Digit = conint(ge=0, le=9)  
+"""Pydantic schemas for request and response models.
+
+Defines data contracts for games, guesses, hints, users, and leaderboard entries.
+"""
+
+Digit = conint(ge=0, le=9)
 
 GuessList = Annotated[List[Digit], annotated_types.Len(min_length=1, max_length=10)]
 

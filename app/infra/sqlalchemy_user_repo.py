@@ -2,6 +2,9 @@ from sqlalchemy.orm import Session
 from app.infra.models import User
 from app.services.auth_service import hash_password
 
+"""SQLAlchemy repository implementation for user accounts and authentication."""
+
+
 class SQLAlchemyUserRepository:
     def __init__(self, db: Session):
         self.db = db

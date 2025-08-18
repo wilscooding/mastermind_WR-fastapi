@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session, joinedload
 from app.infra.models import LeaderboardEntry, User
 
+"""SQLAlchemy repository implementation for persisting leaderboard scores."""
+
+
 
 class SQLAlchemyLeaderboardRepo:
     def __init__(self, database: Session):

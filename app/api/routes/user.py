@@ -7,6 +7,12 @@ from app.services.auth_service import hash_password, verify_password, create_acc
 from app.api.schemas import UserSignup, UserLogin
 from app.api.deps import get_database
 
+"""API routes for user authentication and management.
+
+Handles user registration, login, and retrieving authenticated user details.
+"""
+
+
 router = APIRouter(prefix="/users", tags=["users"])
 
 

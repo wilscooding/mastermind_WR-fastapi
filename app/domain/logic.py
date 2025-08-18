@@ -1,6 +1,13 @@
 from collections import Counter
 from typing import List, Tuple
 
+"""Core game logic for Mastermind.
+
+Contains pure functions like evaluate_guess and is_win that define the rules of the game.
+Independent of any framework or infrastructure.
+"""
+
+
 def evaluate_guess(guess: List[int], secret: List[int]) -> Tuple[int, int]:
     if len(guess) != len(secret):
         raise ValueError("Guess and secret must be of the same length.")
