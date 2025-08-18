@@ -8,8 +8,8 @@ class SQLAlchemyGameRepository:
     def __init__(self, database_session: Session = None):
         self.database_session = database_session or sessionLocal()
 
-    def create_game(self, secret: List[int], mode: str) -> int:
-        new_game = Game(secret=secret, mode=mode)
+    def create_game(self, secret: List[int], mode: str, user_id: int) -> int:
+        new_game = Game(secret=secret, mode=mode, user_id=user_id)
         self.database_session.add(new_game)
         self.database_session.commit()
         self.database_session.refresh(new_game)

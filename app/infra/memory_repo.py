@@ -5,7 +5,7 @@ class InMemoryGameRepository:
         self._storage: Dict[int, Dict] = {}
         self._next_id: int = 1
 
-    def create_game(self, secret: List[int], mode: str) -> int:
+    def create_game(self, secret: List[int], mode: str, user_id: Optional[int] = None) -> int:
         game_id = self._next_id
         self._next_id += 1
         self._storage[game_id] = {
@@ -15,7 +15,8 @@ class InMemoryGameRepository:
             "history": [],
             "won": False,
             "lost": False,
-            "mode": mode
+            "mode": mode,
+            "user_id": user_id
         }
 
         return game_id

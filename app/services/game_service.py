@@ -1,6 +1,10 @@
 import random
+import os
 from typing import List, Optional, Dict
 from app.domain.logic import evaluate_guess, is_win
+
+ENV = os.getenv("ENV", "local")
+
 
 class GameService:
     def __init__(self, game_repository, secret_provider, max_attempts: int = 10):
@@ -8,9 +12,9 @@ class GameService:
         self.secret_provider = secret_provider
         self.max_attempts = max_attempts
 
-    def start_game(self, mode: str = "normal", length: Optional[int] = None, max_attempts: Optional[int] = None, min_num: Optional[int] = 0, max_num: Optional[int] = 9) -> int:
+    def start_game(self, mode: str = "normal", length: Optional[int] = None, max_attempts: Optional[int] = None, min_num: Optional[int] = 0, max_num: Optional[int] = 9, user_id: Optional[int] = None) -> int:
 
-        print(f"DEBUG start_game called with mode={mode}, length={length}, max_attempts={max_attempts}, min_num={min_num}, max_num={max_num}")
+        print(f"DEBUG start_game called with mode={mode}, length={length}, max_attempts={max_attempts}, min_num={min_num}, max_num={max_num}, user_id={user_id}")
 
         difficulty_presets = {
             "easy": {"length": 3, "max_attempts": 12, "min_num": 0, "max_num": 6},
@@ -48,8 +52,9 @@ class GameService:
 
         self.max_attempts = selected_difficulty["max_attempts"]
 
+
         # initialize with no revealed hints
-        game_id = self.game_repository.create_game(secret, mode)
+        game_id = self.game_repository.create_game(secret, mode, user_id=user_id if ENV == "production" else None)
         game_data = self.game_repository.get_game(game_id)
         game_data['revealed_hints'] = []
         self.game_repository.save_game(game_id, game_data)

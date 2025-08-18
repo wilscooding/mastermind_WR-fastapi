@@ -83,7 +83,7 @@ def test_get_hint_success():
 
 def test_get_hint_game_not_found():
     response = client.get("/games/9999/hint")
-    assert response.status_code == 400
+    assert response.status_code == 404
     assert response.json() == {"detail": "Game not found"}
 
 def test_hints_do_not_repeat_positions():
@@ -147,7 +147,7 @@ def test_hint_requires_first_guess():
     # Immediately asking for a hint should fail
     res = client.get(f"/games/{game_id}/hint")
     assert res.status_code == 400
-    assert "at least one guess" in res.json()["detail"]
+    assert "No guesses made yet" in res.json()["detail"]
 
 
 def test_hint_not_allowed_on_last_attempt():

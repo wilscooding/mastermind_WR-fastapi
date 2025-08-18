@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
 DATABASE_URL = 'sqlite:///./mastermind.db'
 
@@ -10,6 +10,12 @@ sessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+def get_database() -> Session:
+    database = sessionLocal()
+    try:
+        yield database
+    finally:
+        database.close()
 
 def test_db_connection():
     try:

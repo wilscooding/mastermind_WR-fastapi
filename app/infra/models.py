@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.types import JSON
+from sqlalchemy.orm import relationship
 from app.infra.database import Base
 
 class Game(Base):
@@ -12,7 +13,10 @@ class Game(Base):
     won = Column(Boolean, default=False)
     lost = Column(Boolean, default=False)
     mode = Column(String, default='fallback')
-    
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user = relationship("User", back_populates="games")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -21,3 +25,5 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
+
+    games = relationship("Game", back_populates="user")
