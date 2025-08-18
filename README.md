@@ -1,4 +1,29 @@
-#  Mastermind WR – FastAPI Backend
+#  Mastermind WR – FastAPI 
+## Table of Contents
+- [Overview](#overview)
+- [How to Run the Game](#how-to-run-the-game)
+  - [Clone the Repository](#1-clone-the-repository)
+  - [Set Up Virtual Environment](#2-set-up-virtual-environment)
+  - [Install Dependencies](#3-install-dependencies)
+  - [Run the Server](#4-run-the-server)
+  - [Run Python CLI](#5-run-python-cli)
+- [🎲 How to Play](#-how-to-play)
+  - [Core Rules](#core-rules)
+  - [Backend API Flow](#backend-api-flow)
+- [Mindset & Thought Process](#mindset--thought-process)
+  - [Understanding the Game Mechanics](#1-understanding-the-game-mechanics)
+  - [Identifying Core Functionality](#2-identifying-core-functionality)
+  - [Designing the Structure](#3-designing-the-structure)
+  - [Crafting the Game Mechanics](#4-crafting-the-game-mechanics)
+- [✨ Creative Extensions](#-creative-extensions)
+- [Future Additions](#future-additions)
+- [Screenshots](#screenshots)
+  - [Main Menu](#main-menu)
+  - [Game Modes](#game-modes)
+  - [Winning Screen](#winning-screen)
+  - [Losing Screen](#losing-screen)
+  - [Online Authentication](#online-authentication)
+
 
 ##  Overview
 
