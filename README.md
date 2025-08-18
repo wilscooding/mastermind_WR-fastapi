@@ -18,6 +18,7 @@ While my first project (`mastermind_game-main`) focused on a local Python game, 
 ### 1. Clone the repository
 
 git clone https://github.com/wilscooding/mastermind_WR-fastapi.git
+
 cd mastermind_WR-fastapi
 
 ### 2. Set Up Virtual Environment
