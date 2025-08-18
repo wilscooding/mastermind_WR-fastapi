@@ -49,6 +49,7 @@ class GuessOut(BaseModel):
     won: bool
     lost: bool
     last_feedback: dict
+    score: Optional[int] = None
 
 class GameOut(BaseModel):
     id: int
@@ -73,3 +74,12 @@ class UserSignup(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class LeaderboardOut(BaseModel):
+    username: str
+    score: int
+    user_id: int
+
+    model_config = {
+        "from_attributes": True
+    }

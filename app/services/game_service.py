@@ -69,13 +69,15 @@ class GameService:
         game = self.game_repository.get_game(game_id)
         if game is None:
             return {"error": "Game not found"}
-    
+
         expected_length = len(game['secret'])
         if len(guess) != expected_length:
-            return {"error": f"Guess must be {expected_length} digits long"}            
-        
+            return {"error": f"Guess must be {expected_length} digits long"}
+
+        # Evaluate guess
         correct_position, correct_number = evaluate_guess(guess, game['secret'])
 
+        # Update game state
         game['history'].append({
             "guess": guess,
             "correct_position": correct_position,
@@ -89,15 +91,20 @@ class GameService:
 
         score = None
 
+        # ✅ Only try leaderboard if game won + user_id exists
         if game['won'] and database and game.get("user_id"):
             attempts_used = game['attempts_used']
             penalty = 100 // self.max_attempts
             score = max(0, 100 - (attempts_used * penalty))
 
-            if database and game.get("user_id") and score > 0:
-                repo = SQLAlchemyLeaderboardRepo(database)
-                leaderboard = LeaderboardService(repo)
-                leaderboard.record_score(game["user_id"], score)
+            if score > 0:
+                try:
+                    repo = SQLAlchemyLeaderboardRepo(database)
+                    leaderboard = LeaderboardService(repo)
+                    leaderboard.record_score(game["user_id"], score)
+                except Exception as e:
+                    # ✅ Never let leaderboard failure crash the game
+                    print(f"⚠️ Failed to save score to leaderboard for user {game.get('user_id')}: {e}")
 
         return {
             "id": game_id,
@@ -106,10 +113,11 @@ class GameService:
             "lost": game['lost'],
             "last_feedback": {
                 "correct_position": correct_position,
-                "correct_number": correct_number    
+                "correct_number": correct_number
             },
             "score": score
         }
+
 
 
     def get_hint(self, game_id: int) -> Dict:

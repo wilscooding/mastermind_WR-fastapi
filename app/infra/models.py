@@ -27,8 +27,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
-    games = relationship("Game", back_populates="user")
     leaderboard_entries = relationship("LeaderboardEntry", back_populates="user")
+    games = relationship("Game", back_populates="user")
 
 class LeaderboardEntry(Base):
     __tablename__ = "leaderboard"

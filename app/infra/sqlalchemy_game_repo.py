@@ -28,6 +28,11 @@ class SQLAlchemyGameRepository:
             game.won = game_data["won"]
             game.lost = game_data["lost"]
             game.mode = game_data["mode"] 
+
+            if "user_id" in game_data and game_data["user_id"]:
+                if game_data["user_id"]:
+                    game.user_id = game_data["user_id"]
+
             self.database_session.commit()
 
     def list_games(self) -> List[Dict]:

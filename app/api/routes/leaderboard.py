@@ -3,24 +3,16 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_database
 from app.services.leaderboard_service import LeaderboardService
 from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
+from app.api.schemas import LeaderboardOut
 
 router = APIRouter(prefix="/leaderboard", tags=["leaderboard"])
 
-@router.get("/")
-def get_leaderboard(limit: int = 10, db: Session = Depends(get_database)):
-    repo = SQLAlchemyLeaderboardRepo(db)
+@router.get("/", response_model=list[LeaderboardOut])
+def get_leaderboard(database: Session = Depends(get_database)):
+    repo = SQLAlchemyLeaderboardRepo(database)
     service = LeaderboardService(repo)
-    entries = service.get_leaderboard(limit)
+    return service.get_leaderboard()
 
-    # Format for clean JSON
-    return [
-        {
-            "username": entry.user.username if entry.user else None,
-            "score": entry.score,
-            "created_at": entry.created_at.isoformat() if entry.created_at else None,
-        }
-        for entry in entries
-    ]
 
 @router.post("/")
 def add_score(user_id: int, score: int, db: Session = Depends(get_database)):

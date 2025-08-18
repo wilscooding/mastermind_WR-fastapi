@@ -154,17 +154,55 @@ def start_game(mode, online=False):
         exit(1)
 
 def make_guess(game_id, guess, online=False):
-    response = requests.post(
-        f"{BASE_URL}/games/{game_id}/guesses",
-        json={"guess": [int(d) for d in guess]},
-        headers=get_headers() if online else {}
-    )
-    if response.status_code == 200:
-        return response.json()
-    elif response.status_code == 404:
-        print("Game not found."); exit(1)
-    else:
-        print("Failed to make guess.", response.text); exit(1)
+    try:
+        response = requests.post(
+            f"{BASE_URL}/games/{game_id}/guesses",
+            json={"guess": [int(d) for d in guess]},
+            headers=get_headers() if online else {}
+        )
+
+        if response.status_code == 200:
+            return response.json()
+
+        elif response.status_code == 404:
+            print("❌ Game not found.")
+            return {
+                "won": False,
+                "lost": True,
+                "last_feedback": {"correct_position": 0, "correct_number": 0},
+                "attempts_left": 0,
+                "score": None,
+            }
+
+        else:
+            # Gracefully handle 400/500 errors
+            try:
+                error_data = response.json()
+            except Exception:
+                error_data = {"detail": response.text}
+
+            print(f"⚠️ Failed to make guess (HTTP {response.status_code}): {error_data}")
+
+            return {
+                "won": False,
+                "lost": False,
+                "last_feedback": {"correct_position": 0, "correct_number": 0},
+                "attempts_left": 0,
+                "score": None,
+            }
+
+    except Exception as e:
+        # Catch network/JSON issues
+        print(f"⚠️ Unexpected error while making guess: {e}")
+        return {
+            "won": False,
+            "lost": False,
+            "last_feedback": {"correct_position": 0, "correct_number": 0},
+            "attempts_left": 0,
+            "score": None,
+        }
+
+
 
 def get_game_state(game_id, online=False):
     response = requests.get(f"{BASE_URL}/games/{game_id}", headers=get_headers() if online else {})
