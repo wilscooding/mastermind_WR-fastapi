@@ -164,6 +164,27 @@ def test_hint_not_allowed_on_last_attempt():
     assert res.status_code == 400
     assert "final attempt" in res.json()["detail"]
 
+def test_hint_before_first_guess():
+    response = client.post("/games/local", json={"mode": "easy"})
+    game_id = response.json()["id"]
+
+    response = client.get(f"/games/{game_id}/hint")
+    assert response.status_code == 400
+    assert "no guesses made yet" in response.json()["detail"].lower()
+
+def test_hint_on_last_attempt():
+    response = client.post("/games/local", json={"mode": "easy"})
+    game_id = response.json()["id"]
+
+    # Burn almost all attempts
+    for _ in range(11):
+        client.post(f"/games/{game_id}/guesses", json={"guess": [0, 0, 0]})
+
+    response = client.get(f"/games/{game_id}/hint")
+    assert response.status_code == 400
+    assert "final attempt" in response.json()["detail"].lower()
+
+
 
 def test_guess_endpoint_works():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
@@ -178,5 +199,47 @@ def test_guess_endpoint_works():
     print("Guess response:", guess_res.json())
     assert guess_res.status_code == 200
 
+def test_guess_too_short_or_long():
+    # Start normal game
+    response = client.post("/games/local", json={"mode": "normal"})
+    game_id = response.json()["id"]
+
+    # Too short
+    response = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2]})
+    assert response.status_code == 400
+    assert "must be" in response.json()["detail"].lower()
+
+    # Too long
+    response = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3, 4, 5]})
+    assert response.status_code == 400
+    assert "must be" in response.json()["detail"].lower()
+
+def test_guess_out_of_range(monkeypatch, capsys):
+    inputs = iter(["1", "999", "123", "quit"])
+
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    from cli import play
+
+    try:
+        play(online=False)
+    except StopIteration:
+        pass
+
+    captured = capsys.readouterr()
+    assert "Digits must be between" in captured.out
+
+
+
+def test_game_loss_after_max_attempts():
+    response = client.post("/games/local", json={"mode": "easy"})
+    game_id = response.json()["id"]
+
+    # Burn all attempts with wrong guess
+    for _ in range(12):
+        client.post(f"/games/{game_id}/guesses", json={"guess": [0, 0, 0]})
+
+    result = client.get(f"/games/{game_id}").json()
+    assert result["lost"] is True
 
 
