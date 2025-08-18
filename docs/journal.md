@@ -1,4 +1,7 @@
 ## Journal  
+
+---
+
 ### Day 1: August 12, 2025  
 
 #### <ins>What I Accomplished Today</ins>  
@@ -10,298 +13,213 @@
 
 ### Core Game Rules (Pure Domain Logic)  
 - Added `app/domain/logic.py` with:  
-  - `evaluate_guess(secret, guess)` using `collections.Counter` to correctly handle duplicates.  
+  - `evaluate_guess(secret, guess)` using `collections.Counter` to handle duplicates.  
   - `is_win(correct_pos, length=4)` helper.  
 - Standardized return contract to `(total_correct, correct_pos)` and updated tests accordingly.  
-- Chose Mastermind constraints for the challenge:  
-  - Length = 4  
-  - Digits 0–9  
-  - Duplicates allowed  
+- Chose Mastermind constraints: length = 4, digits 0–9, duplicates allowed.  
 
 ### Testing  
-- Wrote unit tests in `tests/test_logic.py` for basics, duplicates, invalid length, out-of-range values, and win condition.  
-- Confirmed tests pass locally with `pytest -q`.  
+- Wrote unit tests in `tests/test_logic.py` for basics, duplicates, invalid input, and win condition.  
+- Confirmed tests pass with `pytest -q`.  
 
 ### Architecture Direction  
-- Decided on a modular monolith organized by modules (`api/`, `services/`, `domain/`, `infra/`) using a hexagonal approach (pure core + pluggable adapters).  
-- Picked FastAPI over Flask for built-in validation and auto-generated docs.  
+- Decided on a modular monolith structure (`api/`, `services/`, `domain/`, `infra/`).  
+- Picked FastAPI for validation and auto-generated docs.  
 
 #### <ins>Today’s Blockers</ins>  
+- **ASGI load error**: fixed by adding `__init__.py` and correct uvicorn command.  
+- **Pytest import error**: fixed with `__init__.py` and clean `pytest.ini`.  
+- **Test expectation mismatch**: clarified contract (`total_correct = blacks + whites`).  
 
-- **ASGI load error**: Attribute `"app"` not found in module `"app.main"`.  
-  - Fix: added `app/__init__.py`, ensured command is `uvicorn app.main:app --reload`, ran from project root.  
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Implement in-memory `GameRepository` and `GameService`.  
+- Add endpoints for creating games and making guesses.  
+- Expand tests to cover service and API layer.  
 
-- **Pytest import error**: `ModuleNotFoundError: No module named 'app'`.  
-  - Fix: added `__init__.py` in `app/` and `app/domain/`, created a clean `pytest.ini`.
+---
 
-
-- **Test expectation mix-ups**:  
-  - Mixed up parameter order and tuple unpacking in tests.  
-  - Clarified the definition: `total_correct = blacks + whites`, not just whites. Updated tests and names to match.  
-
-#### <ins>What I Plan To-Do Tomorrow</ins>  
-
-### Service & State  
-- Implement an in-memory `GameRepository` and a `GameService` to track attempts, history, and won/lost without exposing the secret.  
-
-### HTTP API (First Endpoints)  
-- `POST /games` → start a new game.  
-- `POST /games/{id}/guess` → validate input, return `(total_correct, correct_pos)`, and update state.  
-- `GET /games/{id}` → return public game state (attempts, history, won/lost, mode).  
-
-### Validation & Errors  
-- Add Pydantic request/response models and consistent error shapes.  
-
-### Testing  
-- Write API tests using FastAPI’s `TestClient` (happy paths + invalid inputs + terminal states).  
-
-### Random.org Integration  
-- Create a `SecretProvider` adapter that fetches digits from Random.org with retry/timeout and fallback to local PRNG; tag mode (`"random_org"` or `"fallback"`).  
-
-### Docs  
-- Update `README` with run steps and cURL examples.  
-
-
-## Journal  
 ### Day 2: August 13, 2025  
 
 #### <ins>What I Accomplished Today</ins>  
 
-### - Infra & Ports  
-- Finished `ports.py` with stable interfaces:  
-  - `GameRepository`  
-  - `SecretProvider`  
-- Implemented `InMemoryGameRepository`:  
-  - Auto-incrementing IDs  
-  - Tracks history and win/loss state  
-- Added secret providers:  
-  - `LocalRandomSecretProvider` using Python’s `random`  
-  - `CombinedSecretProvider` with fallback logic  
-  - `RandomOrgSecretProvider` with:  
-    - Timeout and retry support  
-    - Response validation  
-    - Returns `(digits, "random_org")`  
+### Game Repository & Service  
+- Implemented `MemoryGameRepository` for temporary game state.  
+- Added `GameService` with game creation, guess evaluation, win/loss detection.  
 
-### - Dependency Injection (`deps.py`)  
-- Created `app/api/deps.py` to wire:  
-  - Game repository  
-  - Secret providers  
-  - `GameService`  
-- Added environment toggles:  
-  - `USE_RANDOM`  
-  - `RANDOM_ORG_TIMEOUT`  
-  - `RANDOM_ORG_RETRIES`  
-  - `MAX_ATTEMPTS`  
-- Confirmed `deps.py` belongs under `api/` (not `infra/`) and moved it accordingly  
+### API Endpoints  
+- Added `POST /games/` (create) and `POST /games/{id}/guesses` (guess).  
+- Error handling for invalid game IDs and guesses.  
 
-### - Game Service  
-- Implemented `GameService` with:  
-  - `start_game`  
-  - `make_guess`  
-  - `get_game`  
-- Finalized feedback fields:  
-  - `correct` (total matches)  
-  - `correct_pos` (exact matches)  
+### Database Integration (Initial)  
+- Created `app/infra/database.py` with SQLAlchemy.  
+- Set up Alembic migrations.  
+- Added `Game` and `User` models.  
 
-### - Tests  
-- Wrote unit tests for:  
-  - `InMemoryGameRepository`  
-  - `CombinedSecretProvider` (fallback path)  
-  - `RandomOrgSecretProvider` (monkeypatched)  
-- Added tests for `deps.py` to verify:  
-  - Environment toggle behavior  
-  - `@lru_cache` behavior  
-- Fixed flaky naming/contract issues by standardizing field names and error strings  
+### Testing  
+- Added tests for repository and service.  
+- Expanded API tests for new routes.  
 
-#### <ins>Today’s Blockers & Fixes</ins>  
-- Import errors from mismatched class/file names (`LocalRandomSecretProvider`, `CombinedSecretProvider`)  
-  - Standardized names, added missing `__init__.py`, cleared `__pycache__`  
-- Local provider returned a 1-item tuple due to trailing comma  
-  - Fixed to return `(digits, "fallback")`  
-- `RandomOrgSecretProvider` didn’t accept timeout/retries  
-  - Updated `__init__`, added validation and retry loop  
-- `@lru_cache` hid env changes  
-  - Added `.cache_clear()` in tests before re-resolving deps  
+#### <ins>Today’s Blockers</ins>  
+- Confusion with Alembic migrations — fixed after re-reading docs.  
+- Serialization errors returning ORM objects — solved with Pydantic schemas.  
 
-#### <ins>What I Plan To-Do Tomorrow</ins>  
-
-### - HTTP API  
-- Expose endpoints with FastAPI:  
-  - `POST /games` → start  
-  - `POST /games/{id}/guess`  
-  - `GET /games/{id}`  
-
-### - Validation & Errors  
-- Add Pydantic schemas  
-- Implement consistent error handling:  
-  - `404 Not Found`  
-  - `409 Game Finished`  
-
-### - API Tests  
-- Use FastAPI’s `TestClient`  
-- Override DI with fixed secret for determinism  
-- Optional: opt-in live Random.org test gated by `LIVE_RANDOM_ORG`  
-
-### - Docs  
-- Update `README`  
-- Append cURL examples  
-
-
-## Day 3: August 14, 2025  
-
-### **What I Accomplished Today**  
-
-- **API Progress**: Got all endpoints working and passing tests for `/games`, `/guesses`, and `/queries`. This means the game is fully playable via the API now — big milestone!  
-- **Testing Wins**:  
-  - Fixed the dependency overrides in tests so they no longer randomly pull in the SQL repo when not intended.  
-  - All test files now use `InMemoryGameRepository` unless explicitly testing the SQL path.  
-  - Resolved some tricky pytest fixture scope issues (turns out monkeypatch scope mismatch was my nemesis).  
-- **SQLAlchemy Integration**:  
-  - Added the option to switch between in-memory and SQLAlchemy repo using the `USE_SQL` env var.  
-  - Now, game IDs persist and increment in the SQL version, which feels a lot more “real game service” than just resetting in memory.  
-- **Code Clean-Up**:  
-  - Standardized variable naming in `deps.py` and service layer for clarity.  
-  - Removed duplicate `get_sqlalchemy_game_repository` since it was redundant.  
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Add user authentication with JWT.  
+- Persist games with SQLAlchemy repositories.  
+- Tie games to users in the database.  
 
 ---
 
-### **Today’s Blockers**  
+### Day 3: August 14, 2025  
 
-- **Win Condition in Tests**: Spent more time than expected debugging why a test guess wasn’t marking the game as won. Turned out to be a dependency override issue — the fixed secret provider wasn’t actually being used in some tests. Once overrides were wired correctly, green lights all the way.  
-- **Route Naming**: Had to double-check route definitions. I’d been calling `/guess` in tests but the API route was `/guesses` — small mismatch, but enough to cause 404s until I fixed it.  
+#### <ins>What I Accomplished Today</ins>  
 
----
+### Authentication  
+- Added user registration/login routes.  
+- Password hashing with `bcrypt`.  
+- JWT authentication in `auth_service.py`.  
 
-### **What I Plan To-Do Tomorrow**  
+### Database Persistence  
+- Wired SQLAlchemy repositories for `User` and `Game`.  
+- Updated `GameService` to persist games.  
+- Added migrations for `users` and `games`.  
 
-- **New Features**:  
-  - Add **game modes** (easy, normal, hard) and **custom difficulty settings** like code length, digit range, and max attempts.  
-  - Update `schemas.py` to accept `CreateGameRequest` with difficulty settings.  
-  - Make secret providers (`LocalRandomSecretProvider` & `RandomOrgSecretProvider`) flexible with length and digit range.  
-  - Update CLI to let the player choose a mode before starting.  
+### API Updates  
+- Restricted endpoints to authenticated users.  
+- Linked games to `user_id`.  
 
-- **Testing**:  
-  - Write new tests for each game mode, ensuring win/loss logic and attempt limits adjust properly.  
+### Testing  
+- Added auth tests for registration/login.  
+- Integration tests ensuring games are tied to users.  
 
-- **Future Thoughts**:  
-  - Explore adding a database leaderboard for high scores and fastest wins.  
-  - Maybe a “challenge mode” with one attempt only (sudden death).
+#### <ins>Today’s Blockers</ins>  
+- JWT decoding issues — fixed by adjusting secret/algorithm.  
+- Relationship setup between `users` and `games` — fixed with `back_populates`.  
 
-
-
-# Day 4 Journal – Mastermind Backend Journey 
-
-Today was a **big one**. We kept pushing our Mastermind backend forward and reached some cool milestones. Here’s the recap of what went down:
-
----
-
-##  Progress
-
-1. **Reviewed requirements from REACH challenge**
-   - Double-checked that our current API matches what the challenge asked for.
-   - Confirmed that basic gameplay (create game, make guess, get game state) is all working.
-
-2. **Game Modes & Difficulty**
-   - Added support for **Easy, Normal, Hard** presets.
-     - Easy → 3 digits, 12 attempts, numbers 0–6
-     - Normal → 4 digits, 10 attempts, numbers 0–9
-     - Hard → 5 digits, 8 attempts, numbers 0–9
-   - Updated both the API and CLI so guesses must match the difficulty length.
-
-3. **CLI Updates**
-   - Fixed the CLI so when you pick a mode, it actually enforces the correct number of digits.
-   - Added debug printing of the secret to make sure random/org + difficulty works correctly.
-   - CLI now feels much closer to a real playable game.
-
-4. **Hints Feature**
-   - Added `get_hint()` method inside `GameService`.
-   - Hints reveal one random unrevealed digit from the secret at the correct position.
-   - Hints consume **one attempt**.
-   - Prevents giving more hints once all positions are revealed.
-   - Stored revealed hints in game state to track progress.
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Begin leaderboard system with scoring rules.  
+- Add difficulty modes to games.  
+- Explore hint system design.  
 
 ---
 
-## Next Steps
+### Day 4: August 15, 2025  
 
-- Add a **new endpoint** in API (`/games/{game_id}/hint`) so clients (or CLI) can request hints.
-- Update **schemas** so `HintOut` is returned properly from the API.
-- Update **CLI** to let players type `hint` to get help.
-- Write **unit tests** for hints (both service + API level).
-- Commit everything we did so far before moving on.
+#### <ins>What I Accomplished Today</ins>  
+
+### Leaderboard Setup  
+- Added `LeaderboardEntry` model.  
+- Created Alembic migration for leaderboard.  
+- Defined repository interface in `ports.py`.  
+- Stubbed `SQLAlchemyLeaderboardRepo`.  
+
+### Game Enhancements  
+- Added difficulty modes (`easy`, `normal`, `hard`, `custom`).  
+- Integrated scoring logic based on attempts left.  
+
+### API Updates  
+- Added `GET /leaderboard` route (basic version).  
+
+### Testing  
+- Added tests for scoring logic.  
+- Began testing leaderboard repo.  
+
+#### <ins>Today’s Blockers</ins>  
+- Unsure of hint system design.  
+- Leaderboard migration issues.  
+
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Finalize hint system in service + API.  
+- Add hints to CLI.  
+- Expand test coverage for hints.  
 
 ---
 
-## Reflection
+### Day 5: August 16, 2025  
 
-We’re getting closer to having a really solid Mastermind backend. The difficulty system feels solid, and hints are a fun addition. Next, we’ll wire hints all the way through (API → CLI → tests). After that, we can start dreaming about bigger features (online vs local games, user accounts, etc.).
+#### <ins>What I Accomplished Today</ins>  
 
-Day 4 = productive.
-
-# Day 5 Journal – Mastermind Backend Journey  
-
----
-
-##  Progress  
-
-### Hints Endpoints  
-- Exposed new **`POST /games/{id}/hint`** route in the API.  
-- Connected it to `GameService.get_hint()` so clients can request hints.  
-- Added Pydantic `HintOut` schema to standardize API responses.  
+### Hints Endpoint  
+- Implemented `POST /games/{id}/hint`.  
+- Connected to `GameService.get_hint()`.  
+- Added `HintOut` schema for responses.  
 
 ### CLI Integration  
-- Updated CLI so players can type **`hint`** during gameplay.  
-- CLI now calls the service method, deducts an attempt, and shows the revealed digit in the correct position.  
-- Prevents hints after all positions are revealed or if the player is on the final attempt.  
+- Added `hint` command in CLI.  
+- Deducts attempt when used.  
+- Blocks hints when exhausted or after game end.  
 
-### Tests  
-- Added **service-level tests** for:  
-  - First hint request → reveals one position.  
-  - Multiple hints → no duplicate positions.  
-  - Exhausting all positions.  
-  - Preventing hints after win/loss.  
-- Added **API-level tests** for:  
-  - `POST /games/{id}/hint` returns a `HintOut`.  
-  - Invalid requests (nonexistent game, requesting hints when not allowed).  
+### Testing  
+- Service tests for hints (unique positions, exhaustion).  
+- API tests for valid/invalid requests.  
 
 ### Code Cleanup  
-- Standardized error handling for hints (`400` when hints not available, `409` if game already finished).  
-- Refactored `GameService` so hint logic uses the same attempt counter as guesses.  
-- Simplified schemas to reduce duplication.  
+- Unified error handling.  
+- Refactored `GameService` to share attempt logic across guesses/hints.  
+
+#### <ins>Today’s Blockers</ins>  
+- Edge case: hints allowed after loss — fixed with guard clause.  
+
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Clean up `README.md` formatting.  
+- Fix journal inconsistencies.  
+- Continue leaderboard integration.  
 
 ---
 
-## ⚠️ Blockers  
+### Day 6: August 17, 2025  
 
-- **Test Flakiness**  
-  - Early tests failed because hints were being repeated.  
-  - Fixed by explicitly tracking revealed indices in game state.  
+#### <ins>What I Accomplished Today</ins>  
 
-- **CLI UX**  
-  - At first, hints weren’t clearly showing which position was revealed.  
-  - Improved output to display the partially revealed secret with `_` placeholders.  
+### Documentation Cleanup  
+- Cleaned up `README.md` with proper code blocks/headings.  
+- Fixed inconsistencies in setup instructions.  
 
-- **Schema Evolution**  
-  - Had to rework `GameOut` schema to include `revealed_hints`, otherwise API couldn’t serialize hint progress.  
+### Journal Updates  
+- Standardized structure of `journal.md`.  
+- Synced plan → actual consistency across days.  
+
+### Leaderboard Work  
+- Reviewed repo + service wiring.  
+- Began connecting leaderboard to API routes.  
+
+### Bug Fixes  
+- Fixed duplicate header issue in UI.  
+- Resolved migration conflicts with leaderboard table.  
+
+#### <ins>Today’s Blockers</ins>  
+- Still finalizing leaderboard scoring formula.  
+- Migration chain messy; considering reset.  
+
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- Final cleanup and polish.  
+- Run full test suite.  
+- Prepare project submission.  
 
 ---
 
-## Next Steps  
+### Day 7: August 18, 2025  
 
-### Leaderboards  
-- Start designing a simple SQL schema for tracking:  
-  - Username / user_id  
-  - Games played, won/lost  
-  - Fewest attempts win  
-  - Fastest win (optional timestamp field)  
+#### <ins>What I Accomplished Today</ins>  
 
-### Scoring System  
-- Decide how points are awarded:  
-  - Win = base points + bonus for attempts left  
-  - Hint = subtract penalty points  
-- Update service + schemas to include score.  
+### Final Cleanup & Documentation  
+- Added Table of Contents to `README.md`.  
+- Verified consistent formatting across all docs.  
+- Completed `journal.md` through Day 7.  
 
-### Docs & Examples  
-- Update `README` with new `/hint` endpoint usage.  
-- Add example CLI session showing a game with hints.  
+### Bug Fixes & Stability  
+- Fixed minor formatting errors in error messages.  
+- Verified schema consistency by recreating DB.  
+- Confirmed CLI + API flows end-to-end.  
 
+### Testing & Verification  
+- Ran full test suite — all passing.  
+- Verified auth → game → guess → hint → leaderboard flow.  
+- Confirmed Alembic migrations apply cleanly.  
+
+#### <ins>Today’s Blockers</ins>  
+- Minor mismatch between test DB and local DB schema — fixed by recreating.  
+
+#### <ins>What I Plan To Do Tomorrow</ins>  
+- **Project submission complete.**  
+- Future work could include Docker setup, frontend client, and multiplayer.  

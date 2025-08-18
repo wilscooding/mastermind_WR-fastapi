@@ -71,7 +71,6 @@ def test_get_hint_success():
 
     client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
-    # request a hint
     response = client.get(f"/games/{game_id}/hint")
     assert response.status_code == 200
     data = response.json()
@@ -89,7 +88,6 @@ def test_get_hint_game_not_found():
 def test_hints_do_not_repeat_positions():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
 
-    # Make a guess before requesting hints
     client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
     first_hint = client.get(f"/games/{game_id}/hint").json()
@@ -106,12 +104,10 @@ def test_hints_exhaust_all_positions():
 
     client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
-    # In easy mode, secret has 3 digits → max 3 hints
     for _ in range(3):
         res = client.get(f"/games/{game_id}/hint")
         assert res.status_code == 200
 
-    # Asking again should fail
     res = client.get(f"/games/{game_id}/hint")
     assert res.status_code == 400
     assert res.json()["detail"] == "No more hints available"
@@ -119,32 +115,26 @@ def test_hints_exhaust_all_positions():
 def test_hint_consumes_attempt():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
 
-    # Make a guess and confirm it's accepted
     guess_response = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
     assert guess_response.status_code == 200
 
-    # Confirm game state reflects the guess
     game_state = client.get(f"/games/{game_id}").json()
     assert game_state["attempts_used"] == 1
 
-    # ✅ Check that the guess was added to history
     assert "history" in game_state
     assert isinstance(game_state["history"], list)
     assert len(game_state["history"]) == 1
     assert game_state["history"][0]["guess"] == [1, 2, 3]
 
-    # Now request a hint
     hint_response = client.get(f"/games/{game_id}/hint")
     assert hint_response.status_code == 200
 
-    # Confirm hint consumed an attempt
     updated_state = client.get(f"/games/{game_id}").json()
     assert updated_state["attempts_used"] == 2
 
 def test_hint_requires_first_guess():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
 
-    # Immediately asking for a hint should fail
     res = client.get(f"/games/{game_id}/hint")
     assert res.status_code == 400
     assert "No guesses made yet" in res.json()["detail"]
@@ -153,11 +143,9 @@ def test_hint_requires_first_guess():
 def test_hint_not_allowed_on_last_attempt():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
 
-    # Make one guess to unlock hints
     client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
 
-    # Burn all but 1 attempt
-    for _ in range(10):  # easy mode has 12 attempts, so use 11
+    for _ in range(10):
         client.post(f"/games/{game_id}/guesses", json={"guess": [9, 9, 9]})
 
     res = client.get(f"/games/{game_id}/hint")
@@ -176,7 +164,6 @@ def test_hint_on_last_attempt():
     response = client.post("/games/local", json={"mode": "easy"})
     game_id = response.json()["id"]
 
-    # Burn almost all attempts
     for _ in range(11):
         client.post(f"/games/{game_id}/guesses", json={"guess": [0, 0, 0]})
 
@@ -190,26 +177,21 @@ def test_guess_endpoint_works():
     game_id = client.post("/games", json={"mode": "easy"}).json()["id"]
     print("Created game ID:", game_id)
 
-    # Confirm game exists
     res = client.get(f"/games/{game_id}")
     assert res.status_code == 200
 
-    # Try making a guess
     guess_res = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3]})
     print("Guess response:", guess_res.json())
     assert guess_res.status_code == 200
 
 def test_guess_too_short_or_long():
-    # Start normal game
     response = client.post("/games/local", json={"mode": "normal"})
     game_id = response.json()["id"]
 
-    # Too short
     response = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2]})
     assert response.status_code == 400
     assert "must be" in response.json()["detail"].lower()
 
-    # Too long
     response = client.post(f"/games/{game_id}/guesses", json={"guess": [1, 2, 3, 4, 5]})
     assert response.status_code == 400
     assert "must be" in response.json()["detail"].lower()
@@ -235,7 +217,6 @@ def test_game_loss_after_max_attempts():
     response = client.post("/games/local", json={"mode": "easy"})
     game_id = response.json()["id"]
 
-    # Burn all attempts with wrong guess
     for _ in range(12):
         client.post(f"/games/{game_id}/guesses", json={"guess": [0, 0, 0]})
 

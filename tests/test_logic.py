@@ -25,7 +25,7 @@ def test_invalid_guess_length():
     
 def test_range_check():
     secret = [1, 2, 3, 4]
-    guess = [1, 2, 10, 4]  # only numbers allowed are 0-9
+    guess = [1, 2, 10, 4]  
     with pytest.raises(ValueError):
         evaluate_guess(secret, guess)
     
@@ -35,4 +35,4 @@ def test_is_win():
     assert is_win(3, 4) is False
     assert is_win(0, 4) is False
     assert is_win(2, 4) is False
-    assert is_win(4, 5) is False  # Length mismatch
+    assert is_win(4, 5) is False  

@@ -15,7 +15,6 @@ class DummyResponse:
             raise httpx.HTTPStatusError("Error", request=None, response=None)
 
 def test_random_org_provider_returns_label(monkeypatch):
-    # Arrange: fake API returns "1\n2\n3\n4\n"
     def fake_get(url, params=None, timeout=None):
         return DummyResponse("1\n2\n3\n4\n")
 
@@ -23,10 +22,8 @@ def test_random_org_provider_returns_label(monkeypatch):
 
     provider = RandomOrgSecretProvider(length=4, min_num=0, max_num=9)
 
-    # Act
     numbers, label = provider.generate_secret()
 
-    # Assert
     assert numbers == [1, 2, 3, 4]
     assert label == "random_org"
 

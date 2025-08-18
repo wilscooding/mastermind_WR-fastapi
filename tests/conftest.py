@@ -10,7 +10,6 @@ from app.infra.sqlalchemy_game_repo import SQLAlchemyGameRepository
 from app.infra.local_random import LocalRandomSecretProvider
 from app.services.game_service import GameService
 
-# Use an in-memory SQLite DB for tests
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 engine = create_engine(
@@ -18,7 +17,6 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Override DB dependency
 def override_get_db():
     db = TestingSessionLocal()
     try:
@@ -26,15 +24,12 @@ def override_get_db():
     finally:
         db.close()
 
-# Apply override
 app.dependency_overrides[get_database] = override_get_db
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_database():
-    # Create tables before tests
     Base.metadata.create_all(bind=engine)
     yield
-    # Drop tables after tests
     Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture()
@@ -61,7 +56,7 @@ def test_user_factory(database_session: Session):
         user = User(
             username=username,
             email=email,
-            hashed_password=password  # ⚠️ If your signup normally hashes, use same here
+            hashed_password=password  
         )
         database_session.add(user)
         database_session.commit()

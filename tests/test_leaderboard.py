@@ -2,23 +2,20 @@ from app.api.deps import get_game_service
 
 import pytest
 from app.infra.database import Base
-from app.infra.models import LeaderboardEntry, User  # adjust if needed
+from app.infra.models import LeaderboardEntry, User  
 
 @pytest.fixture(autouse=True)
 def clean_tables(database_session):
-    # Clear dependent tables (leaderboard depends on user_id foreign key)
     database_session.query(LeaderboardEntry).delete()
     database_session.query(User).delete()
     database_session.commit()
     yield
-    # Clean again after test
     database_session.query(LeaderboardEntry).delete()
     database_session.query(User).delete()
     database_session.commit()
 
 
 def test_online_game_scoring(client):
-    # signup
     signup_resp = client.post("/users/signup", json={
         "username": "testplayer",
         "email": "testplayer@example.com",
@@ -26,7 +23,6 @@ def test_online_game_scoring(client):
     })
     assert signup_resp.status_code == 200
 
-    # login
     login_resp = client.post("/users/login", json={
         "email": "testplayer@example.com",
         "password": "password123"
@@ -35,18 +31,15 @@ def test_online_game_scoring(client):
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # start online game
     game_resp = client.post("/games/online", json={"mode": "easy"}, headers=headers)
     assert game_resp.status_code == 200
     game_id = game_resp.json()["id"]
 
-    # fetch secret from repo
     secret = get_game_service().game_repository.get_game(game_id)["secret"]
 
-    # make winning guess
     guess_resp = client.post(
         f"/games/{game_id}/guesses",
-        json={"guess": secret},  # already a list of ints
+        json={"guess": secret},  
         headers=headers
     )
     assert guess_resp.status_code == 200
@@ -54,7 +47,6 @@ def test_online_game_scoring(client):
     assert data["won"] is True
     assert data["score"] is not None
 
-    # check leaderboard
     leaderboard_resp = client.get("/leaderboard/")
     assert leaderboard_resp.status_code == 200
     scores = leaderboard_resp.json()
@@ -64,7 +56,6 @@ def test_leaderboard_sorting(database_session, test_user_factory, game_service):
     user1 = test_user_factory(username="user1", email="u1@example.com", password="password123")
     user2 = test_user_factory(username="user2", email="u2@example.com", password="password123")
 
-    # Manually record scores
     from app.services.leaderboard_service import LeaderboardService
     from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
 

@@ -43,7 +43,6 @@ def make_guess(
     result = game_service.make_guess(game_id, body.guess, database)
 
     if "error" in result:
-        # You can choose 404 or 400 based on the error type
         status = 404 if result["error"] == "Game not found" else 400
         raise HTTPException(status_code=status, detail=result["error"])
 

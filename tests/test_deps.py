@@ -38,13 +38,13 @@ def test_lru_cache_means_env_change_needs_cache_clear(monkeypatch):
     first = deps.get_secret_provider()
     assert isinstance(first, LocalRandomSecretProvider)
 
-    # Flip env to enable Random.org BUT do not clear cache yet
+    
     monkeypatch.setenv("USE_RANDOM", "1")
     cached = deps.get_secret_provider()
-    # still the same object due to caching
+    
     assert cached is first
 
-    # Now clear caches and re-resolve -> should switch type
+    
     _clear_caches()
     second = deps.get_secret_provider()
     assert isinstance(second, CombinedSecretProvider)

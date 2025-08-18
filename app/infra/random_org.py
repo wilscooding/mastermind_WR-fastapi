@@ -34,20 +34,3 @@ class RandomOrgSecretProvider:
         return numbers, "random_org"
     
     
-
-        # last_exception = None
-        # for _ in range(self.retries + 1):
-        #     try:
-        #         response = httpx.get(self.BASE_URL, params=params, timeout=self.timeout)
-        #         response.raise_for_status()
-        #         numbers = [int(x) for x in response.text.strip().split()]
-        #         if len(numbers) != self.length:
-        #             raise ValueError(f"Random.org returned {len(numbers)} numbers, expected {self.length}")
-        #         if any(n < self.min_num or n > self.max_num for n in numbers):
-        #             raise ValueError("Random.org returned out-of-range digits")
-        #         # ✅ Always return "random_org" label
-        #         return numbers, "random_org"
-        #     except Exception as e:
-        #         last_exception = e
-
-        # raise RuntimeError(f"Failed to fetch random numbers from Random.org: {last_exception}")

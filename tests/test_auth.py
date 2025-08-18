@@ -6,13 +6,13 @@ from app.infra.database import sessionLocal
 client = TestClient(app)
 
 def test_signup_and_login():
-    #delete before it runs
+    
     database = sessionLocal()
     database.query(User).filter(User.email == "alice@example.com").delete()
     database.commit()
     database.close()
     
-    # 1. Sign up
+    
     response = client.post("/users/signup", json={
         "username": "Alice",
         "email": "alice@example.com",
@@ -22,7 +22,7 @@ def test_signup_and_login():
     data = response.json()
     assert "id" in data
 
-    # 2. Login
+    
     response = client.post("/users/login", json={
         "email": "alice@example.com",
         "password": "secret123"
@@ -31,7 +31,7 @@ def test_signup_and_login():
     token = response.json()["access_token"]
     assert token
 
-    # 3. Access protected route
+    
     response = client.get("/games", headers={
         "Authorization": f"Bearer {token}"
     })

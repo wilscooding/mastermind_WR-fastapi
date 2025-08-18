@@ -25,17 +25,7 @@ class GameService:
             "hard": {"length": 5, "max_attempts": 8, "min_num": 0, "max_num": 9}
         }
 
-        # if mode in difficulty_presets: 
-        #     selected_difficulty = difficulty_presets[mode]
-        
-        # else:
-        #     selected_difficulty = {
-        #         "length": length or 4,
-        #         "max_attempts": max_attempts or 10,
-        #         "min_num": min_num,
-        #         "max_num": max_num
-        #     }
-
+       
         if mode in difficulty_presets and length is None and max_attempts is None:
             selected_difficulty = difficulty_presets[mode]
         
@@ -56,7 +46,7 @@ class GameService:
         self.max_attempts = selected_difficulty["max_attempts"]
 
 
-        # initialize with no revealed hints
+
         game_id = self.game_repository.create_game(secret, mode, user_id=user_id)
         game_data = self.game_repository.get_game(game_id)
         game_data['revealed_hints'] = []
@@ -74,10 +64,9 @@ class GameService:
         if len(guess) != expected_length:
             return {"error": f"Guess must be {expected_length} digits long"}
 
-        # Evaluate guess
+     
         correct_position, correct_number = evaluate_guess(guess, game['secret'])
 
-        # Update game state
         game['history'].append({
             "guess": guess,
             "correct_position": correct_position,
@@ -91,7 +80,7 @@ class GameService:
 
         score = None
 
-        # ✅ Only try leaderboard if game won + user_id exists
+        
         if game['won'] and database and game.get("user_id"):
             attempts_used = game['attempts_used']
             penalty = 100 // self.max_attempts
@@ -103,7 +92,7 @@ class GameService:
                     leaderboard = LeaderboardService(repo)
                     leaderboard.record_score(game["user_id"], score)
                 except Exception as e:
-                    # ✅ Never let leaderboard failure crash the game
+                    
                     print(f"⚠️ Failed to save score to leaderboard for user {game.get('user_id')}: {e}")
 
         return {
@@ -129,11 +118,10 @@ class GameService:
         if "revealed_hints" not in game:
             game["revealed_hints"] = []
 
-        #rule 1: must make at least one guess before using hints
+        
         if len(game['history']) == 0:
             raise ValueError("Must make at least one guess before using hints")
 
-        # #rule 2: cannot request hint if only one attempt remains
         attempts_left = self.max_attempts - game['attempts_used']
         if attempts_left <= 1:
             raise ValueError("Hint not allowed on final attempt")

@@ -3,7 +3,6 @@ from typing import List, Optional, Annotated
 import annotated_types
 
 Digit = conint(ge=0, le=9)  
-# minimal length will be 1 and max length will be 10
 
 GuessList = Annotated[List[Digit], annotated_types.Len(min_length=1, max_length=10)]
 
