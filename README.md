@@ -117,10 +117,10 @@ Compared to the original CLI version, this backend adds:
 ##  Screenshots
 
 ###  Main Menu
-![Main Menu](docs/mastermaind_main_menu.png)
+![Main Menu](docs/mastermind_main_menu.png)
 
 ###  Game Modes
-![Game Modes](docs/masterming_modes.png)
+![Game Modes](docs/mastermind_modes.png)
 
 ###  Winning Screen
 ![Winning Screen](docs/mastermind_win.png)
