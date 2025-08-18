@@ -1,11 +1,12 @@
 import os
 from fastapi import APIRouter, Body, Depends, HTTPException
 from app.api.schemas import GuessRequest, CreateGameOut, GuessOut, CreateGameRequest, HintOut, GameOut
-from app.api.deps import get_game_service
+from app.api.deps import get_database, get_game_service
 from app.infra.models import User
 from app.services.game_service import ENV, GameService
 from app.services.auth_service import get_current_user
 from typing import Any, Optional
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/games", tags=["games"])
 
@@ -36,9 +37,10 @@ def create_game(body: Optional[CreateGameRequest] = Body(default=None), game_ser
 def make_guess(
     game_id: int,
     body: GuessRequest,
-    game_service: GameService = Depends(get_game_service)
+    game_service: GameService = Depends(get_game_service),
+    database: Session = Depends(get_database)
 ):
-    result = game_service.make_guess(game_id, body.guess)
+    result = game_service.make_guess(game_id, body.guess, database)
 
     if "error" in result:
         # You can choose 404 or 400 based on the error type

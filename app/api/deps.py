@@ -1,6 +1,7 @@
 from functools import lru_cache
 import os
 
+from sqlalchemy.orm import Session 
 from app.infra.memory_repo import InMemoryGameRepository
 from app.infra.random_org import RandomOrgSecretProvider
 from app.infra.local_random import LocalRandomSecretProvider
@@ -13,6 +14,13 @@ from app.infra.database import sessionLocal
 def _bool_env(var_name: str, default: bool) -> bool:
 
     return os.getenv(var_name, str(default)).lower() in ('true', '1', 'yes', 't', 'y', 'on')
+
+def get_database() -> Session:
+    database = sessionLocal()
+    try:
+        yield database
+    finally:
+        database.close()
 
 @lru_cache
 def get_game_repository():

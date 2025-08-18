@@ -1,7 +1,8 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Boolean
 from sqlalchemy.types import JSON
 from sqlalchemy.orm import relationship
 from app.infra.database import Base
+from datetime import datetime
 
 class Game(Base):
     __tablename__ = "games"
@@ -27,3 +28,15 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     games = relationship("Game", back_populates="user")
+    leaderboard_entries = relationship("LeaderboardEntry", back_populates="user")
+
+class LeaderboardEntry(Base):
+    __tablename__ = "leaderboard"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    score = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="leaderboard_entries")
+

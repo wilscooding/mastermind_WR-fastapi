@@ -61,11 +61,21 @@ def login():
     })
 
     if response.status_code == 200:
-        token = response.json()["access_token"]
+        data = response.json()
+        token = data.get("access_token") or data.get("token")
+        if not token:
+            print("Login failed: No token received", data)
+            return
         save_token(token)   # ✅ persist token
         print("✅ Login successful!")
-    else:
-        print("❌ Login failed:", response.text)
+
+def logout():
+    global token
+    token = None
+    if os.path.exists(TOKEN_FILE):
+        os.remove(TOKEN_FILE)
+    print("👋 Logged out successfully!")
+
 
 # ---------------------------
 # Game modes
@@ -89,7 +99,8 @@ def main_menu():
     print("1. Play Local Game")
     print("2. Play Online Game (login required)")
     print("3. View Rules")
-    print("4. Quit")
+    print("4. Logout")
+    print("5. Exit")
     return input("> ").strip()
 
 def display_rules():
@@ -186,11 +197,10 @@ def play(online=False):
             guess = input(f"Enter {game_length}-digit guess or 'hint': ").strip()
 
             if guess.lower() == "hint":
-                if hint_used >= hint_limit and hint_limit is not None:
-                    print("No more hints avaliable for this mode")
+                if hint_limit is not None and hint_used >= hint_limit:
+                    print("No more hints available for this mode")
                     continue
 
-            
                 hint = get_hint(game_id, online)
                 if hint:
                     hint_used += 1
@@ -200,7 +210,8 @@ def play(online=False):
                     continue
 
             if not guess.isdigit() or len(guess) != game_length:
-                print(f"❌ Invalid guess. Must be {game_length} digits.")
+                print(f"Invalid guess. Must be {game_length} digits.")
+                continue
             max_digit = MODES[mode]["max_num"]
             if any(int(number) < 0 or int(number) > max_digit for number in guess):
                 print(f"Digits must be between 0 and {max_digit}.")
@@ -213,6 +224,8 @@ def play(online=False):
 
             if result["won"]:
                 print("🏆 You won!")
+                if "score" in result and result["score"] is not None:
+                    print(f"Your score: {result['score']} (saved to leaderboard)")
                 break
             elif result["lost"]:
                 print("💀 You lost!")
@@ -225,6 +238,13 @@ def play(online=False):
             break
 
 def online_auth_menu():
+    if token:
+        test = requests.get(f"{BASE_URL}/users/me", headers=get_headers())
+        if test.status_code == 200:
+            print("🔑 You are already logged in.")
+            return True
+        else:
+            logout()
     while True:
         print("\n---Online Game---")
         print("1. Log In")
@@ -249,19 +269,31 @@ def online_auth_menu():
 # Main Loop
 # ---------------------------
 def main():
+    global token
     load_token()  # ✅ load saved token
     while True:
         choice = main_menu()
         if choice == "1":
             play(online=False)
         elif choice == "2":
-            if not token:
+            if token:
+
+                test = requests.get(f"{BASE_URL}/users/me", headers=get_headers())
+                if test.status_code != 200:
+                    print("⚠️ Saved login expired, please log in again.")
+                    logout()
+                    if not online_auth_menu():
+                        continue
+            else:
                 if not online_auth_menu():
-                    continue
+                    continue    
+
             play(online=True)
         elif choice == "3":
             display_rules()
         elif choice == "4":
+            logout()
+        elif choice == "5":
             print("Goodbye!"); break
         else:
             print("Invalid choice.")

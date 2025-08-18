@@ -5,15 +5,11 @@ from app.infra.database import sessionLocal
 from app.infra.models import User
 from app.services.auth_service import hash_password, verify_password, create_access_token
 from app.api.schemas import UserSignup, UserLogin
+from app.api.deps import get_database
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-def get_database():
-    database = sessionLocal()
-    try:
-        yield database
-    finally:
-        database.close()
+
 
 @router.post("/signup") 
 def register_user(body: UserSignup, database: Session = Depends(get_database)):

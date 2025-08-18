@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional
 
 class InMemoryGameRepository:
@@ -16,7 +17,8 @@ class InMemoryGameRepository:
             "won": False,
             "lost": False,
             "mode": mode,
-            "user_id": user_id
+            "user_id": user_id,
+            "created_at": datetime.utcnow().isoformat()
         }
 
         return game_id
@@ -28,3 +30,6 @@ class InMemoryGameRepository:
     def save_game(self, game_id: int, game_data: Dict) -> None:
         if game_id in self._storage:
             self._storage[game_id] = game_data
+
+    def list_games(self):
+        return list(self._storage.values())

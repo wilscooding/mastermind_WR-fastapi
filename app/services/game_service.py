@@ -2,6 +2,9 @@ import random
 import os
 from typing import List, Optional, Dict
 from app.domain.logic import evaluate_guess, is_win
+from app.infra.sqlalchemy_leaderboard_repo import SQLAlchemyLeaderboardRepo
+from app.services.leaderboard_service import LeaderboardService
+from sqlalchemy.orm import Session
 
 ENV = os.getenv("ENV", "local")
 
@@ -54,23 +57,24 @@ class GameService:
 
 
         # initialize with no revealed hints
-        game_id = self.game_repository.create_game(secret, mode, user_id=user_id if ENV == "production" else None)
+        game_id = self.game_repository.create_game(secret, mode, user_id=user_id)
         game_data = self.game_repository.get_game(game_id)
         game_data['revealed_hints'] = []
         self.game_repository.save_game(game_id, game_data)
 
         return game_id
-    
-    def make_guess(self, game_id: int, guess: List[int]) -> Dict:
+
+
+    def make_guess(self, game_id: int, guess: List[int], database: Optional[Session] = None) -> Dict:
         game = self.game_repository.get_game(game_id)
         if game is None:
             return {"error": "Game not found"}
-        
+    
         expected_length = len(game['secret'])
         if len(guess) != expected_length:
             return {"error": f"Guess must be {expected_length} digits long"}            
         
-        correct_position, correct_number = evaluate_guess(guess,game['secret'])
+        correct_position, correct_number = evaluate_guess(guess, game['secret'])
 
         game['history'].append({
             "guess": guess,
@@ -83,6 +87,18 @@ class GameService:
 
         self.game_repository.save_game(game_id, game)
 
+        score = None
+
+        if game['won'] and database and game.get("user_id"):
+            attempts_used = game['attempts_used']
+            penalty = 100 // self.max_attempts
+            score = max(0, 100 - (attempts_used * penalty))
+
+            if database and game.get("user_id") and score > 0:
+                repo = SQLAlchemyLeaderboardRepo(database)
+                leaderboard = LeaderboardService(repo)
+                leaderboard.record_score(game["user_id"], score)
+
         return {
             "id": game_id,
             "attempts_left": self.max_attempts - game['attempts_used'],
@@ -91,9 +107,11 @@ class GameService:
             "last_feedback": {
                 "correct_position": correct_position,
                 "correct_number": correct_number    
-            }
+            },
+            "score": score
         }
-    
+
+
     def get_hint(self, game_id: int) -> Dict:
 
         game = self.game_repository.get_game(game_id)
@@ -146,3 +164,4 @@ class GameService:
 
     def list_games(self) -> List[Dict]:
         return self.game_repository.list_games()
+    
