@@ -99,8 +99,9 @@ def main_menu():
     print("1. Play Local Game")
     print("2. Play Online Game (login required)")
     print("3. View Rules")
-    print("4. Logout")
-    print("5. Exit")
+    print("4. Leaderboard")
+    print("5. Logout")
+    print("6. Exit")
     return input("> ").strip()
 
 def display_rules():
@@ -130,6 +131,22 @@ def display_rules():
     print("   - You run out of attempts (💀 lose)")
     input("\nPress Enter to return to Main Menu...")
 
+def view_leaderboard():
+    response = requests.get(f"{BASE_URL}/leaderboard", headers=get_headers())
+    if response.status_code == 200:
+        scores = response.json()
+        if not scores:
+            print("No leaderboard entries yet.")
+            return
+        print("\n" + "=" * 50)
+        print("         LEADERBOARD         ")
+        print("=" * 50)
+        for index, entry in enumerate(scores, start=1):
+            print(f"{index}. {entry['username']}: {entry['score']}")
+        print("=" * 50)
+    
+    else:
+        print("Failed to fetch leaderboard:", response.text)
 
 def choose_mode():
     print("=" * 50)
@@ -330,8 +347,10 @@ def main():
         elif choice == "3":
             display_rules()
         elif choice == "4":
-            logout()
+            view_leaderboard()
         elif choice == "5":
+            logout()
+        elif choice == "6":
             print("Goodbye!"); break
         else:
             print("Invalid choice.")
